@@ -1,0 +1,29 @@
+{
+  "name": "lender",
+  "version": "1.0.0",
+  "description": "App to track lending and borrowing",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.12.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ccoltrera/lender.git"
+  },
+  "keywords": [
+    "lend",
+    "borrow",
+    "polonius"
+  ],
+  "author": "Colin, Kate, Michael, Sue",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ccoltrera/lender/issues"
+  },
+  "homepage": "https://github.com/ccoltrera/lender#readme"
+}

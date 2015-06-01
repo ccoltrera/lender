@@ -82,4 +82,4 @@ function Item(owner, itemDetails) {
   this.itemDetails = itemDetails;
 }
 
-var $form = $("#form");
+var $form = $("#form").load("new_user.html");
