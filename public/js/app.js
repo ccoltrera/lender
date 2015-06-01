@@ -35,7 +35,7 @@ User.prototype.initializeUser = function () {
 User.prototype.createItem = function(itemDetails) {
   var upc, item;
   upc = this.generateUPC(itemDetails);
-  item = new Item(this.userIdent, itemDetails, upc);
+  item = new Item(this.userIdent, itemDetails);
   //Adds UPC to user's inventory
   this.inventory.push(upc);
   //Overwrites Firebase inventory with local inventory.
@@ -45,10 +45,20 @@ User.prototype.createItem = function(itemDetails) {
 
 }
 
-//Generates a UPC for item, using the itemDetails and the userIdent. Function can be
-//changed later for more advanced UPC generation.
+//Generates a UPC for item, using the itemDetails and the userIdent converted to unicode and turned into
+//a string separated by '-'. Function can be changed later for more advanced UPC generation.
 User.prototype.generateUPC = function(itemDetails) {
-  return this.userIdent + itemDetails;
+  var slug, unicode, upc;
+  slug = this.userIdent + itemDetails;
+  unicode = [];
+
+  for (var i=0; i < slug.length; i++) {
+    unicode.push(slug.charCodeAt(i));
+  }
+
+  upc = unicode.join("-");
+
+  return upc;
 }
 
 User.prototype.initializeLend = function() {
@@ -67,8 +77,7 @@ User.prototype.returnItem = function() {
 
 }
 
-function Item(owner, itemDetails, upc) {
+function Item(owner, itemDetails) {
   this.owner = owner;
   this.itemDetails = itemDetails;
-  this.upc = upc;
 }
