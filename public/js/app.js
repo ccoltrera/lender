@@ -1,4 +1,4 @@
-var firebaseRef, usersRef, itemsRef, trackersRef;
+var lenderAppRef, usersRef, itemsRef, trackersRef;
 
 //Creates a Firebase() object, which links to Colin's Firebase
 lenderAppRef = new Firebase("http://boiling-torch-5679.firebaseIO.com");
@@ -81,3 +81,4 @@ function Item(owner, itemDetails) {
   this.owner = owner;
   this.itemDetails = itemDetails;
 }
+
