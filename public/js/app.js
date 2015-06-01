@@ -81,3 +81,4 @@ function Item(owner, itemDetails) {
   this.owner = owner;
   this.itemDetails = itemDetails;
 }
+
