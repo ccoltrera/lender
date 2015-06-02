@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Polonius Ledger</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/app.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://cdn.firebase.com/js/client/2.2.5/firebase.js"></script>
+    <script src="js/app.js"></script>
+  </head>
+  <body>
+    <h1 class="container-fluid col-xs-11">Polonius</h1>
+    <article class="lent container-fluid col-xs-11">
+      <h2 class="title">LENT</h2>
+      <table class="lent-table">
+        <tr>
+          <th>Returned</th>
+          <th>Item:</th>
+          <th>To Friend:</th>
+        </tr>
+<!-- these will be auto-populated, but row is shown as example -->
+        <tr>
+          <td><input type="checkbox"></input></td>
+          <td>
+            <ul class="item">
+              <li>test for item</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="friend">
+              <li>for friend</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </article>
+    <article class="borrowed container-fluid col-xs-11">
+      <h2 class="title">BORROWED</h2>
+      <table class="borrowed-table">
+        <tr>
+          <th>Returned</th>
+          <th>Item:</th>
+          <th>From Friend:</th>
+        </tr>
+<!-- these will be auto-populated, but row is shown as example -->
+        <tr>
+          <td><input type="checkbox"></input></td>
+          <td>
+            <ul class="item">
+              <li>test for item</li>
+            </ul>
+          </td>
+          <td>
+            <ul class="friend">
+              <li>for friend</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </article>
+
+  </body>
+</html>

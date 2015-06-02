@@ -1,3 +1,7 @@
+* { /*sizes boxes to avoid adding issues with padding and border */
+  box-sizing: border-box;
+}
+
 .backgroundImage {
 	z-index: -50;
 	position: fixed;
@@ -40,6 +44,24 @@ body{
 	margin-left: auto;
 	margin: 10px;
 }
+
+.title { /*avoids h2 borders*/
+  background-color: none;
+  border: none;
+}
+
+table { /*default for table data*/
+  font-size: 18px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+th { /*makes table headers centered*/
+  text-align: center;
+}
+
+/*#loginArea, #signUpArea {
+=======
 /* Bigger Columns with header font size*/
 .col-xs-8,
 .col-xs-9,
@@ -53,5 +75,3 @@ body{
 	margin-left: auto;
 	margin: 10px;
 }
-
-
