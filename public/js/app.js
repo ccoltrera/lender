@@ -62,7 +62,8 @@ User.prototype.generateUPC = function(itemDetails) {
 }
 
 //Creates a new Tracker() object, adds transactionID to the user's ledger["lent"] on the browser side
-//and on Firebase, and to the borrower's ledger["borrowed"] on Firebase.
+//and on Firebase, and to the borrower's ledger["borrowed"] on Firebase. Changes item's lentOut to true
+//on Firebase.
 User.prototype.initializeLend = function(upc, borrower) {
   var transactionID, tracker;
 
@@ -80,6 +81,9 @@ User.prototype.initializeLend = function(upc, borrower) {
   });
   //Adds tracker to Firebase
   trackersRef.child(transactionID).set(tracker);
+  //Change item's lentOut property to true on Firebase
+  itemsRef.child(upc + "/lentOut/").set(true);
+
 }
 
 //Generates a transaction ID for a tracker, using date in milliseconds and item UPC,
@@ -158,7 +162,9 @@ Polonius.prototype.createNewItem = function(thisPolonius, itemDetails) {
 //Takes a userIdent string, pulls a user off of Firebase and sets it as the Polonius() object's currentUser property.
 Polonius.prototype.setUserFromFirebase = function(userIdent) {
   //
-  usersRef.child(userIdent).once('value', $.proxy(function(userSnapshot) {
+  var that = this;
+
+  usersRef.child(userIdent).once('value', function(userSnapshot) {
     var user;
     user = new User(userIdent);
     if (userSnapshot.val()['inventory']) {
@@ -170,9 +176,52 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
 
     user.userRef = usersRef.child(localStorage['lenderUserIdent']);
 
-    this.currentUser = user;
+    that.currentUser = user;
 
-  },this));
+  });
+}
+
+Polonius.prototype.setNewLendForm = function() {
+  this.loadForm("init_lend", this.initializeNewLend);
+
+  var that = this;
+  //Gets items snapshot from Firebase to populate items dropdown menu
+  itemsRef.once("value", function(itemsSnapshot) {
+    var items, item;
+
+    items = itemsSnapshot.val();
+
+    for (var i = 0; i < that.currentUser.inventory.length; i++) {
+
+      item = items[that.currentUser.inventory[i]];
+
+      if (!item.lentOut) {
+
+        $("#item").append("<option value=" + that.currentUser.inventory[i] + ">" + item.itemDetails + "</option>");
+
+      }
+    }
+
+  });
+
+  //Gets users snapshot from Firebase to populate borrower dropdown menu
+  usersRef.once("value", function(usersSnapshot) {
+    var users, user;
+
+    users = usersSnapshot.val();
+
+    for (user in users) {
+      if (user != that.currentUser.userIdent) {
+         $("#borrower").append("<option>" + user + "</option>");
+      }
+    }
+
+  });
+
+}
+
+Polonius.prototype.initializeNewLend = function(thisPolonius, upc, borrower) {
+  thisPolonius.currentUser.initializeLend(upc, borrower);
 }
 
 function Tracker(upc, borrower) {
@@ -183,3 +232,5 @@ function Tracker(upc, borrower) {
   this.itemReceived = false;
 }
 
+polonius = new Polonius();
+polonius.setUserFromFirebase(localStorage["lenderUserIdent"]);
