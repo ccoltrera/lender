@@ -1,3 +1,7 @@
+* { /*sizes boxes to avoid adding issues with padding and border */
+  box-sizing: border-box;
+}
+
 .backgroundImage {
 	z-index: -50;
 	position: fixed;
@@ -21,21 +25,53 @@
 
 body{
 	color: #1D2326;
+	text-align: center;
 }
 
-h1, h2 {
+.col-xs-1, .col-xs-2 {
+/*Spacing so no content*/
+}
+/* Smaller columns so no big header fonts etc*/
+.col-xs-3,
+.col-xs-4,
+.col-xs-5,
+.col-xs-6,
+.col-xs-7 {
 	background-color: #A69276;
 	border: 8px solid #7D2A35;
+	font-size: 18px;
+	margin-right: auto;
+	margin-left: auto;
+	margin: 10px;
+}
+
+.title { /*avoids h2 borders*/
+  background-color: none;
+  border: none;
+}
+
+table { /*default for table data*/
+  font-size: 18px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+th { /*makes table headers centered*/
+  text-align: center;
 }
 
 /*#loginArea, #signUpArea {
+=======
+/* Bigger Columns with header font size*/
+.col-xs-8,
+.col-xs-9,
+.col-xs-10,
+.col-xs-11,
+.col-xs-12 {
 	background-color: #A69276;
 	border: 8px solid #7D2A35;
-}*/
-
-.col-xs-5 {
-	background-color: blue;
-	color: white;
-	border: 2px solid black;
+	font-size: 46px;
+	margin-right: auto;
+	margin-left: auto;
+	margin: 10px;
 }
-
