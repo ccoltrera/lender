@@ -1,0 +1,56 @@
+/*Background Image is saved with the name background in the folder.
+Make sure to give it a background class*/
+
+.backgroundImage {
+	z-index: -50;
+	position: fixed;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+}
+
+.backgroundImage img {
+	position: absolute;
+	opacity: 0.5;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+	min-width: 50%;
+	min-height: 50%;
+}
+
+body{
+	color: #1D2326;
+}
+/* We are using columns XS for mobile screens. Bootstrap will
+automatically stretch and change them for whatever screen the
+user is using*/
+.col-xs-1, .col-xs-2 {
+/*Spacing so no content*/
+}
+/* Smaller columns so no big header fonts etc*/
+.col-xs-3,
+.col-xs-4,
+.col-xs-5,
+.col-xs-6,
+.col-xs-7 {
+	background-color: blue;
+	color: white;
+	border: 2px solid black;
+	font-size: 18px;
+}
+/* Bigger Columns with header font size*/
+.col-xs-8,
+.col-xs-9,
+.col-xs-10,
+.col-xs-11,
+.col-xs-12 {
+	background-color: blue;
+	color: white;
+	border: 2px solid black;
+	font-size: 46px;
+}
+/*Make sure that if you want to stack you have seperate row classes.
