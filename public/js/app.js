@@ -26,7 +26,7 @@ function User(userIdent) {
 }
 
 //Creates a node in Firebase for the given user.
-User.prototype.initializeUser = function () {
+User.prototype.initialize = function () {
   this.userRef.child("userIdent").set(this.userIdent);
 }
 
@@ -81,4 +81,64 @@ function Item(owner, itemDetails) {
   this.owner = owner;
   this.itemDetails = itemDetails;
 }
+
+//Loads a form into the body, and passes the function to be used with the form data.
+function loadForm(formName, functionToCall) {
+  $.get(formName + '.html', function(data) {
+    $("body").html(data);
+    $("#" + formName + "_form").on("submit", function(event) {
+      event.preventDefault();
+      var parsedData = parseForm($(this).serialize());
+      functionToCall(parsedData[0],parsedData[1],parsedData[2]);
+    });
+  });
+}
+
+//Parses the serialized data from a form, returns array of form values without their associated names.
+function parseForm(serializedData) {
+  dataArray = serializedData.split("&");
+  for (var i = 0; i < dataArray.length; i++) {
+    dataArray[i] = dataArray[i].slice(dataArray[i].indexOf("=") + 1);
+  }
+
+  return dataArray;
+}
+
+//userIdent in local storage, and creates a new user to add to Firebase.
+function createNewUser(userIdent) {
+  localStorage.setItem('lenderUserIdent', userIdent);
+  new User(userIdent).initialize();
+}
+
+//creates new Item, using the currentUser User() object.
+function createNewItem(itemDetails) {
+  currentUser.createItem(itemDetails);
+}
+
+//Using the userIdent in localStorage, pulls a user off of Firebase
+function userFromFirebase() {
+  console.log(localStorage['lenderUserIdent']);
+  usersRef.child(localStorage['lenderUserIdent']).once('value', function(userSnapshot) {
+    currentUser = new User(userSnapshot.val()['userIdent']);
+    if (userSnapshot.val()['inventory']) {
+      currentUser.inventory = userSnapshot.val()['inventory'];
+    }
+    if (userSnapshot.val()['ledger']) {
+      currentUser.ledger = userSnapshot.val()['ledger'];
+    }
+    currentUser.userRef = usersRef.child(localStorage['lenderUserIdent']);
+  });
+}
+
+
+$(function() {
+  if (localStorage['lenderUserIdent']) {
+    userFromFirebase();
+    loadForm("new_item", createNewItem);
+  }
+  else {
+    loadForm("new_user", createNewUser);
+  }
+
+})
 
