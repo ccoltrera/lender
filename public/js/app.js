@@ -26,7 +26,7 @@ function User(userIdent) {
 }
 
 //Creates a node in Firebase for the given user.
-User.prototype.initializeUser = function () {
+User.prototype.initialize = function () {
   this.userRef.child("userIdent").set(this.userIdent);
 }
 
@@ -80,5 +80,70 @@ User.prototype.returnItem = function() {
 function Item(owner, itemDetails) {
   this.owner = owner;
   this.itemDetails = itemDetails;
+}
+
+function Polonius() {
+
+}
+
+//Loads a form into the body, and passes the function to be used with the form data.
+Polonius.prototype.loadForm = function(formName, functionToCall) {
+  var parseForm, thisPolonius;
+
+  parseForm = this.parseForm;
+  thisPolonius = this;
+
+  $.get(formName + '.html', function(data) {
+    $("body").html(data);
+    $("#" + formName + "_form").on("submit", function(event) {
+      event.preventDefault();
+      var parsedData = parseForm($(this).serialize());
+      functionToCall(thisPolonius, parsedData[0], parsedData[1], parsedData[2]);
+    });
+  });
+}
+
+//Parses the serialized data from a form, returns array of form values without their associated names.
+Polonius.prototype.parseForm = function(serializedData) {
+  dataArray = serializedData.split("&");
+  for (var i = 0; i < dataArray.length; i++) {
+    dataArray[i] = dataArray[i].slice(dataArray[i].indexOf("=") + 1);
+  }
+
+  return dataArray;
+}
+
+//Sets userIdent in local storage, sets Polonius() object's currentUser to a new User() object
+//and uses initialize() to add it to Firebase.
+Polonius.prototype.createNewUser = function(thisPolonius, userIdent) {
+  localStorage.setItem('lenderUserIdent', userIdent);
+
+  thisPolonius.currentUser = new User(userIdent);
+  thisPolonius.currentUser.initialize();
+}
+
+//creates new Item, using the currentUser User() object.
+Polonius.prototype.createNewItem = function(thisPolonius, itemDetails) {
+  thisPolonius.currentUser.createItem(itemDetails);
+}
+
+//Takes a userIdent string, pulls a user off of Firebase and sets it as the Polonius() object's currentUser property.
+Polonius.prototype.setUserFromFirebase = function(userIdent) {
+  //
+  usersRef.child(userIdent).once('value', $.proxy(function(userSnapshot) {
+    var user;
+    user = new User(userIdent);
+    if (userSnapshot.val()['inventory']) {
+      user.inventory = userSnapshot.val()['inventory'];
+    }
+    if (userSnapshot.val()['ledger']) {
+      user.ledger = userSnapshot.val()['ledger'];
+    }
+
+    user.userRef = usersRef.child(localStorage['lenderUserIdent']);
+
+    this.currentUser = user;
+
+  },this));
 }
 
