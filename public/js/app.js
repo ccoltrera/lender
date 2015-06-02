@@ -61,6 +61,12 @@ User.prototype.generateUPC = function(itemDetails) {
   return upc;
 }
 
+//Generates a transaction ID for a tracker, using date, item UPC, and borrower, converted to unicode and turn into
+//a string separated by '-'. Function can be changed later for more advanced UPC generation.
+User.prototype.generateTransactionID = function(upc, borrower) {
+
+}
+
 User.prototype.initializeLend = function() {
 
 }
@@ -80,6 +86,7 @@ User.prototype.returnItem = function() {
 function Item(owner, itemDetails) {
   this.owner = owner;
   this.itemDetails = itemDetails;
+  this.lentOut = false;
 }
 
 function Polonius() {
@@ -147,3 +154,12 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
   },this));
 }
 
+function Tracker(upc, borrower) {
+  this.upc = upc;
+  this.borrower = borrower;
+  borrowConfirmed = false;
+  itemReturned = false;
+  itemReceived = false;
+}
+
+Tracker.prototype.
