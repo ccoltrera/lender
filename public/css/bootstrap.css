@@ -115,7 +115,7 @@ optgroup,
 select,
 textarea {
   margin: 0;
-  font: inherit;
+  font: font-family: 'Raleway', inherit, sans-serif;
   color: inherit;
 }
 button {

@@ -38,28 +38,50 @@ body{
 .col-xs-6,
 .col-xs-7 {
 	background-color: #A69276;
-	border: 8px solid #7D2A35;
+	border: 2px solid #7D2A35;
 	font-size: 18px;
 	margin-right: auto;
 	margin-left: auto;
 	margin: 10px;
 }
-
 .title { /*avoids h2 borders*/
   background-color: none;
   border: none;
+  font-family: 'Poiret One', sans-serif;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
 }
-
+#firsttitle { /*styles the Polonius headings on each page*/
+	font-family: 'Poiret One', sans-serif;
+	font-size: 127px;
+	font-size: 15vw;
+	overflow: auto;
+	text-shadow: 4px 4px 4px rgba(0, 0, 0, .5);
+	border-radius: 47%;
+}
+#caption {
+	font-family: 'Raleway', sans-serif;
+	font-size: 18px;
+	font-size:4vw;
+	font-style: italic;
+	text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+	margin-bottom: 42px;
+}
+p {
+	font-family: 'Raleway', sans-serif;
+}
 table { /*default for table data*/
   font-size: 18px;
   margin-right: auto;
   margin-left: auto;
+  font-family: font-family: 'Raleway', sans-serif;
 }
 
 th { /*makes table headers centered*/
   text-align: center;
 }
-
+tr {
+	font-family: 'Raleway', sans-serif;
+}
 /*#loginArea, #signUpArea {
 =======
 /* Bigger Columns with header font size*/
@@ -69,9 +91,10 @@ th { /*makes table headers centered*/
 .col-xs-11,
 .col-xs-12 {
 	background-color: #A69276;
-	border: 8px solid #7D2A35;
+	border: 2px solid #7D2A35;
 	font-size: 46px;
 	margin-right: auto;
 	margin-left: auto;
 	margin: 10px;
+
 }
