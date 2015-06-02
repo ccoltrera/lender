@@ -18,7 +18,7 @@ The purpose of this app is to keep track of items that users are lending out to 
 
 ## Tools Used
   *Firebase
-  *Bootsrap grid
+  *Bootstrap grid
 
 
 

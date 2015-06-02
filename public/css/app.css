@@ -27,12 +27,16 @@ body{
 	color: #1D2326;
 }
 
-h1, h2 {
+h1, h2, article {
 	background-color: #A69276;
 	border: 8px solid #7D2A35;
 }
+.title { /*avoids h2 borders*/
+  background-color: none;
+  border: none;
+}
 
-th {
+th { /*makes table headers centered*/
   text-align: center;
 }
 
