@@ -162,4 +162,3 @@ function Tracker(upc, borrower) {
   itemReceived = false;
 }
 
-Tracker.prototype.
