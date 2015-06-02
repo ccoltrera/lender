@@ -82,20 +82,29 @@ function Item(owner, itemDetails) {
   this.itemDetails = itemDetails;
 }
 
+function Polonius() {
+
+}
+
 //Loads a form into the body, and passes the function to be used with the form data.
-function loadForm(formName, functionToCall) {
+Polonius.prototype.loadForm = function(formName, functionToCall) {
+  var parseForm, thisPolonius;
+
+  parseForm = this.parseForm;
+  thisPolonius = this;
+
   $.get(formName + '.html', function(data) {
     $("body").html(data);
     $("#" + formName + "_form").on("submit", function(event) {
       event.preventDefault();
       var parsedData = parseForm($(this).serialize());
-      functionToCall(parsedData[0],parsedData[1],parsedData[2]);
+      functionToCall(thisPolonius, parsedData[0], parsedData[1], parsedData[2]);
     });
   });
 }
 
 //Parses the serialized data from a form, returns array of form values without their associated names.
-function parseForm(serializedData) {
+Polonius.prototype.parseForm = function(serializedData) {
   dataArray = serializedData.split("&");
   for (var i = 0; i < dataArray.length; i++) {
     dataArray[i] = dataArray[i].slice(dataArray[i].indexOf("=") + 1);
@@ -104,40 +113,49 @@ function parseForm(serializedData) {
   return dataArray;
 }
 
-//userIdent in local storage, and creates a new user to add to Firebase.
-function createNewUser(userIdent) {
+//Sets userIdent in local storage, sets Polonius() object's currentUser to a new User() object
+//and uses initialize() to add it to Firebase.
+Polonius.prototype.createNewUser = function(thisPolonius, userIdent) {
   localStorage.setItem('lenderUserIdent', userIdent);
-  new User(userIdent).initialize();
+
+  thisPolonius.currentUser = new User(userIdent);
+  thisPolonius.currentUser.initialize();
 }
 
 //creates new Item, using the currentUser User() object.
-function createNewItem(itemDetails) {
-  currentUser.createItem(itemDetails);
+Polonius.prototype.createNewItem = function(thisPolonius, itemDetails) {
+  thisPolonius.currentUser.createItem(itemDetails);
 }
 
-//Using the userIdent in localStorage, pulls a user off of Firebase
-function userFromFirebase() {
-  console.log(localStorage['lenderUserIdent']);
-  usersRef.child(localStorage['lenderUserIdent']).once('value', function(userSnapshot) {
-    currentUser = new User(userSnapshot.val()['userIdent']);
+//Takes a userIdent string, pulls a user off of Firebase and sets it as the Polonius() object's currentUser property.
+Polonius.prototype.setUserFromFirebase = function(userIdent) {
+  //
+  usersRef.child(userIdent).once('value', $.proxy(function(userSnapshot) {
+    var user;
+    user = new User(userIdent);
     if (userSnapshot.val()['inventory']) {
-      currentUser.inventory = userSnapshot.val()['inventory'];
+      user.inventory = userSnapshot.val()['inventory'];
     }
     if (userSnapshot.val()['ledger']) {
-      currentUser.ledger = userSnapshot.val()['ledger'];
+      user.ledger = userSnapshot.val()['ledger'];
     }
-    currentUser.userRef = usersRef.child(localStorage['lenderUserIdent']);
-  });
+
+    user.userRef = usersRef.child(localStorage['lenderUserIdent']);
+
+    this.currentUser = user;
+
+  },this));
 }
 
-
 $(function() {
+  var polonius = new Polonius();
+
   if (localStorage['lenderUserIdent']) {
-    userFromFirebase();
-    loadForm("new_item", createNewItem);
+    polonius.setUserFromFirebase(localStorage['lenderUserIdent']);
+    polonius.loadForm("new_item", polonius.createNewItem);
   }
   else {
-    loadForm("new_user", createNewUser);
+    polonius.loadForm("new_user", polonius.createNewUser);
   }
 
 })
