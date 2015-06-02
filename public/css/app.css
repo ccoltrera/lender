@@ -1,24 +1,48 @@
 * { /*sizes boxes to avoid adding issues with padding and border */
   box-sizing: border-box;
 }
-body {
 
+.backgroundImage {
+	z-index: -50;
+	position: fixed;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
 }
-.header {
-  background color: #A69276;
-  border: #7D2A35
+
+.backgroundImage img {
+	position: absolute;
+	opacity: 0.5;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+	min-width: 50%;
+	min-height: 50%;
+}
+
+body{
+	color: #1D2326;
+}
+
+h1, h2 {
+	background-color: #A69276;
+	border: 8px solid #7D2A35;
 }
 
 th {
   text-align: center;
 }
 
+/*#loginArea, #signUpArea {
+	background-color: #A69276;
+	border: 8px solid #7D2A35;
+}*/
+
 .col-xs-5 {
-  background-color: blue;
-  color: white;
-  border: 2px solid black;
+	background-color: blue;
+	color: white;
+	border: 2px solid black;
 }
-
-
-
-

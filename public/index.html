@@ -5,12 +5,38 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Polonius</title>
-  <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
-  <link rel="stylesheet" type="text/css" href="app.css">
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/app.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
   <script src="https://cdn.firebase.com/js/client/2.2.5/firebase.js"></script>
   <script src="js/app.js"></script>
 </head>
-<body>
+<body class="container">
+	<section class="backgroundImage"><img src="background.jpg" alt="Source: http://i16.photobucket.com/albums/b38/The_Hat/art-deco-gold-wallpaper_zpsfa39fd36.jpg">
+	</section>
 
+	<section id="Page Headine">
+		<p>
+			<h1>Polonius</h1>
+			<h2>Neither a borrower nor lender be...without a lender app</h2>
+		</p>
+	</section>
+	<section class="row">
+		<div class="col-xs-5" id="loginArea">
+			<p>Login</p>
+			<form>
+				<input id="sample" name="sample" placeholder="sample" />
+			</form>
+			<button>Login</button>
+		</div>
+		<div class="col-xs-1"></div>
+		<div class="col-xs-5" id="signUpArea">
+			<p>Sign Up</p>
+			<form>
+				<input id="signUpForm" name="sample" placeholder="sample" />
+			</form>
+			<button>Sign Up</button>
+		</div>
+	</section>
 </body>
 </html>
