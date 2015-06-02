@@ -26,11 +26,11 @@ function User(userIdent) {
 }
 
 //Creates a node in Firebase for the given user.
-User.prototype.initialize = function () {
+User.prototype.initializeUser = function () {
   this.userRef.child("userIdent").set(this.userIdent);
 }
 
-//Creates a new Item() object, adds it to the user's inventory browser side
+//Creates a new Item() object, adds its UPC to the user's inventory browser side
 //and on Firebase.
 User.prototype.createItem = function(itemDetails) {
   var upc, item;
@@ -38,8 +38,8 @@ User.prototype.createItem = function(itemDetails) {
   item = new Item(this.userIdent, itemDetails);
   //Adds UPC to user's inventory
   this.inventory.push(upc);
-  //Overwrites Firebase inventory with local inventory.
-  this.userRef.child("inventory").set(this.inventory);
+  //Adds upc to Firebase inventory array.
+  this.userRef.child("inventory/" + (this.inventory.length - 1) ).set(upc);
   //Adds item to Firebase
   itemsRef.child(upc).set(item);
 
@@ -61,14 +61,35 @@ User.prototype.generateUPC = function(itemDetails) {
   return upc;
 }
 
-//Generates a transaction ID for a tracker, using date, item UPC, and borrower, converted to unicode and turn into
-//a string separated by '-'. Function can be changed later for more advanced UPC generation.
-User.prototype.generateTransactionID = function(upc, borrower) {
+//Creates a new Tracker() object, adds transactionID to the user's ledger["lent"] on the browser side
+//and on Firebase, and to the borrower's ledger["borrowed"] on Firebase.
+User.prototype.initializeLend = function(upc, borrower) {
+  var transactionID, tracker;
 
+  transactionID = this.generateTransactionID(upc,borrower);
+  tracker = new Tracker(upc, borrower);
+  //Adds transactionID to user's ledger["lent"] browser side.
+  this.ledger["lent"].push(transactionID);
+  //Adds transactionID to user's ledger["lent"] on Firebase.
+  this.userRef.child("ledger/lent/" + (this.ledger["lent"].length - 1) ).set(transactionID);
+  //Takes snapshot of borrower's ledger["borrowed"] on Firebase, then adds transactionID with appropriate key.
+  usersRef.child(borrower + "/ledger/borrowed/").once('value', function(borrowerLedgerSnapshot) {
+
+    usersRef.child(borrower + "/ledger/borrowed/" + (borrowerLedgerSnapshot.val().length) ).set(transactionID);
+
+  });
+  //Adds tracker to Firebase
+  trackersRef.child(transactionID).set(tracker);
 }
 
-User.prototype.initializeLend = function() {
+//Generates a transaction ID for a tracker, using date in milliseconds and item UPC,
+//separated by ':'. Function can be changed later for more advanced UPC generation.
+User.prototype.generateTransactionID = function(upc, borrower) {
+  var date, transactionID;
+  date = new Date();
+  transactionID = date.valueOf() + ":" + upc;
 
+  return transactionID;
 }
 
 User.prototype.confirmReturn = function() {
@@ -121,12 +142,12 @@ Polonius.prototype.parseForm = function(serializedData) {
 }
 
 //Sets userIdent in local storage, sets Polonius() object's currentUser to a new User() object
-//and uses initialize() to add it to Firebase.
+//and uses initializeUser() to add it to Firebase.
 Polonius.prototype.createNewUser = function(thisPolonius, userIdent) {
   localStorage.setItem('lenderUserIdent', userIdent);
 
   thisPolonius.currentUser = new User(userIdent);
-  thisPolonius.currentUser.initialize();
+  thisPolonius.currentUser.initializeUser();
 }
 
 //creates new Item, using the currentUser User() object.
@@ -157,8 +178,8 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
 function Tracker(upc, borrower) {
   this.upc = upc;
   this.borrower = borrower;
-  borrowConfirmed = false;
-  itemReturned = false;
-  itemReceived = false;
+  this.borrowConfirmed = false;
+  this.itemReturned = false;
+  this.itemReceived = false;
 }
 
