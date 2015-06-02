@@ -147,16 +147,3 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
   },this));
 }
 
-$(function() {
-  var polonius = new Polonius();
-
-  if (localStorage['lenderUserIdent']) {
-    polonius.setUserFromFirebase(localStorage['lenderUserIdent']);
-    polonius.loadForm("new_item", polonius.createNewItem);
-  }
-  else {
-    polonius.loadForm("new_user", polonius.createNewUser);
-  }
-
-})
-
