@@ -7,6 +7,7 @@
   <title>Polonius</title>
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="css/app.css">
+  <link href='http://fonts.googleapis.com/css?family=Poiret+One|Raleway' rel='stylesheet' type='text/css'>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
   <script src="https://cdn.firebase.com/js/client/2.2.5/firebase.js"></script>
 </head>
@@ -14,11 +15,12 @@
 	<section class="backgroundImage"><img src="background.jpg" alt="Source: http://i16.photobucket.com/albums/b38/The_Hat/art-deco-gold-wallpaper_zpsfa39fd36.jpg">
 	</section>
 
-	<section class="col-xs-11" id="Page Headine">
+	<section class="col-xs-11" id="Page_Headine">
 		<p>
 			<h1>Polonius</h1>
-			<h2>Neither a borrower nor lender be...without a lender app</h2>
+			<h2 id="caption">Neither a borrower nor lender be...<br> without a lender app</h2>
 		</p>
+
 	</section>
 	<section class="row">
 		<div class="col-xs-5" id="loginArea">
@@ -28,9 +30,12 @@
 			</select>
 			<button>Login</button>
 		</div>
+
 		<div class="col-xs-1"></div>
+
 		<div class="col-xs-5" id="signUpArea">
 			<p>Sign Up</p>
+
 			<form id="new_user_form">
   			<input id="new_userIdent" type="text" name="userIdent" placeholder="Name"></input>
 				<button id="new_user_button">Create New User</button>

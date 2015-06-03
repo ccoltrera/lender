@@ -44,8 +44,6 @@ User.prototype.createItem = function(itemDetails) {
   itemsRef.child(upc).set(item);
 
 }
-
-
 //Generates a UPC for item, using the itemDetails and the userIdent converted to unicode and turned into
 //a string separated by '-'. Function can be changed later for more advanced UPC generation.
 User.prototype.generateUPC = function(itemDetails) {
