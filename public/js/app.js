@@ -44,7 +44,6 @@ User.prototype.createItem = function(itemDetails) {
   itemsRef.child(upc).set(item);
 
 }
-
 //Generates a UPC for item, using the itemDetails and the userIdent converted to unicode and turned into
 //a string separated by '-'. Function can be changed later for more advanced UPC generation.
 User.prototype.generateUPC = function(itemDetails) {
@@ -232,5 +231,29 @@ function Tracker(upc, borrower) {
   this.itemReceived = false;
 }
 
-polonius = new Polonius();
-polonius.setUserFromFirebase(localStorage["lenderUserIdent"]);
+Polonius.prototype.setUserDropdown = function() {
+
+  usersRef.once('value', function(usersSnapshot) {
+    var user;
+    //Pulling names from Firebase
+    var usersFromFirebase = usersSnapshot.val();
+    var namesForDropdown = Object.keys(usersFromFirebase);
+    console.dir(namesForDropdown);
+    //Use names in object and adds to pulldown list
+    var startDDPopulate = document.getElementById('selectLoginID');
+    var options = namesForDropdown;
+
+    for(var i=0; i< options.length; i++) {
+      var opt = options[i];
+      var el = document.createElement('option');
+      el.textContent = opt;
+      el.value = opt;
+      startDDPopulate.appendChild(el);
+    }
+  });
+};
+
+var x = new Polonius();
+x.setUserDropdown();
+
+
