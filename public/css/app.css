@@ -1,3 +1,4 @@
+
 * { /*sizes boxes to avoid adding issues with padding and border */
   box-sizing: border-box;
 }
@@ -43,7 +44,9 @@ body{
 	margin-right: auto;
 	margin-left: auto;
 	margin: 10px;
+	overflow: auto;
 }
+
 .title { /*avoids h2 borders*/
   background-color: none;
   border: none;
@@ -91,10 +94,10 @@ tr {
 .col-xs-11,
 .col-xs-12 {
 	background-color: #A69276;
+	overflow: auto;
 	border: 2px solid #7D2A35;
 	font-size: 46px;
 	margin-right: auto;
 	margin-left: auto;
 	margin: 10px;
-
 }
