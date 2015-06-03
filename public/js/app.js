@@ -148,16 +148,22 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
 
 Polonius.prototype.setUserDropdown = function() {
 
-  usersRef.once('value', function(usersSnapshot) {
+  $('#loginArea').load('login.html')
+  usersRef.on('value', function(usersSnapshot) {
+    var startDDPopulate = document.getElementById('selectLoginID');
     var user;
     //Pulling names from Firebase
     var usersFromFirebase = usersSnapshot.val();
     var namesForDropdown = Object.keys(usersFromFirebase);
-    console.dir(namesForDropdown);
     //Use names in object and adds to pulldown list
-    var startDDPopulate = document.getElementById('selectLoginID');
-    var options = namesForDropdown;
 
+    var options = namesForDropdown;
+    // startDDPopulate.textContent = '';
+    var opt = 'Find your name';
+    var el = document.createElement('option');
+    el.textContent = opt;
+    el.value = opt;
+    startDDPopulate.appendChild(el);
     for(var i=0; i< options.length; i++) {
       var opt = options[i];
       var el = document.createElement('option');
@@ -170,4 +176,3 @@ Polonius.prototype.setUserDropdown = function() {
 
 var x = new Polonius();
 x.setUserDropdown();
-
