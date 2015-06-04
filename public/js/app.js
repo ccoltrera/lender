@@ -247,7 +247,7 @@ Polonius.prototype.setConfirmBorrowsForm = function() {
 
   var that = this;
 
-  usersRef.child(this.currentUser.userIdent + "/ledger/borrowed").once("value", function(borrowedSnapshot) { console.log("firebase call");
+  usersRef.child(this.currentUser.userIdent + "/ledger/borrowed").once("value", function(borrowedSnapshot) {
     //Add the table to be filled in below.
     $("body").append("<table id='confirm_borrows_table'></table>");
     var $confirmBorrowsTable = $("#confirm_borrows_table");
@@ -266,9 +266,7 @@ Polonius.prototype.setConfirmBorrowsForm = function() {
         borrowedItems[currentTransactionID].transactionID = currentTransactionID;
 
         //Take snapshot of tracker on Firebase, using the transactionID
-        trackersRef.child(currentTransactionID).once("value", function(trackerSnapshot) { console.log("firebase call");
-
-          //ONCE YOU"VE GONE ALL THE WAY DOWN TO ITEMS, DO A CONDITIONAL IN WHICH ONLY ITEMS YET TO BE CONFIRMED SHOW UP ON THE TABLE
+        trackersRef.child(currentTransactionID).once("value", function(trackerSnapshot) {
 
           borrowedItems[trackerSnapshot.val()["transactionID"]]["upc"] = trackerSnapshot.val()["upc"];
           borrowedItems[trackerSnapshot.val()["transactionID"]]["borrowConfirmed"] = trackerSnapshot.val()["borrowConfirmed"];
@@ -276,10 +274,7 @@ Polonius.prototype.setConfirmBorrowsForm = function() {
           //If an item's borrowConfirmed is false, then go through and add the other info about it.
           if (!borrowedItems[trackerSnapshot.val()["transactionID"]]["borrowConfirmed"] ) {
 
-            itemsRef.child(trackerSnapshot.val()["upc"]).once("value", function(itemSnapshot) { console.log("firebase call");
-
-              //Check if every item in borrowedItems has a upc, if so then write the items where borrowConfirmed is false to the table
-              //with a button that returns their trackerID plugged into that.currentUser.confirmBorrow
+            itemsRef.child(trackerSnapshot.val()["upc"]).once("value", function(itemSnapshot) {
 
               //Iterate over items in borrowedItems, and if the itemSnapshot is a match then set itemDetails and owner properties.
               for (var item in borrowedItems) {
@@ -289,34 +284,31 @@ Polonius.prototype.setConfirmBorrowsForm = function() {
                   borrowedItems[item]["itemDetails"] = itemSnapshot.val()["itemDetails"];
                   borrowedItems[item]["owner"] = itemSnapshot.val()["owner"];
 
-                  var $borrowConfirmedButton = $("<button value='" + borrowedItems[item]["transactionID"] + "'>Confirm Borrow</button>");
+                  //For each of the items, which all have borrowConfirmed as false, appends them to the table and adds a button which
+                  //changes borrowConfirms to true.
+                  var $borrowConfirmedButton = $("<button value='" + borrowedItems[item]["transactionID"] + "'>Confirm Borrow</button>")
+                    .on("click", function(event) {
+                      that.currentUser.confirmBorrow(this.value);
+                    });
 
                   $confirmBorrowsTable
-                    .append("<tr id='tID" + borrowedItems[item]["transactionID"] + "'><td>" + borrowedItems[item]["itemDetails"] + "</td><td>" + borrowedItems[item]["owner"] + "</td><td></td></tr>")
+                    .append("<tr id='upc" + borrowedItems[item]["upc"] + "'><td>" + borrowedItems[item]["itemDetails"] + "</td><td>" + borrowedItems[item]["owner"] + "</td><td></td></tr>")
 
-                  $("#tID" + borrowedItems[item]["transactionID"]).hide()//.append($borrowConfirmedButton);
+                  $("#upc" + borrowedItems[item]["upc"]).append($borrowConfirmedButton);
 
                 }
-
               }
-
             });
-
           }
-
         });
-
       }
-
     }
 
     //If the user doesn't have any borrowed items.
     else {
-
+      $confirmBorrowsTable.append("<tr><td>No waiting borrows.</td></tr>");
     }
-
   });
-
 }
 
 Polonius.prototype.initializeNewLend = function(thisPolonius, upc, borrower) {
