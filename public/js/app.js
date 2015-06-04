@@ -115,6 +115,49 @@ User.prototype.confirmBorrow = function(transactionID) {
 
 }
 
+User.prototype.cancelLend = function(transactionIDBorrowerUPCString) {
+  var that = this;
+
+  var transactionIDBorrowerUPCArray = transactionIDBorrowerUPCString.split(",");
+  var transactionID = transactionIDBorrowerUPCArray[0];
+  var borrower = transactionIDBorrowerUPCArray[1];
+  var upc = transactionIDBorrowerUPCArray[2]
+
+  //Deletes the tracker
+  trackersRef.child(transactionID).remove();
+
+  //Finds the location of the transactionID in user's ledger.
+  usersRef.child(this.userIdent + "/ledger/lent/").once("value", function(ledgerLent) {
+    for (var i = 0; i < ledgerLent.val().length; i++) {
+      if (ledgerLent.val()[i] == transactionID) {
+
+        //Removes it from the found location.
+        usersRef.child(that.userIdent + "/ledger/lent/" + i).remove();
+
+        //Syncs Firebase changes to server side.
+        usersRef.child(that.userIdent + "/ledger/lent/").once("value", function(ledgerLentSnapshot) {
+          that.ledger.lent = ledgerLentSnapshot.val();
+        });
+      }
+    }
+  });
+
+  //Finds the location of the transactionID in borrower's ledger, then removes it.
+  usersRef.child(borrower + "/ledger/borrowed/").once("value", function(ledgerBorrowed) {
+    for (var i = 0; i < ledgerBorrowed.val().length; i++) {
+      if (ledgerBorrowed.val()[i] == transactionID) {
+
+        usersRef.child(borrower + "/ledger/borrowed/" + i).remove();
+
+      }
+    }
+  });
+
+  //Find the item by upc, and changes its lentOut Boolean to false
+  itemsRef.child(upc + "/lentOut").set(false);
+
+}
+
 User.prototype.returnItem = function() {
 
 }
@@ -328,6 +371,92 @@ Polonius.prototype.setConfirmBorrowsForm = function() {
     }
   });
 }
+
+Polonius.prototype.setPendingLendsTable = function() {
+
+  var that = this;
+
+  usersRef.child(this.currentUser.userIdent + "/ledger/lent").once("value", function(lentSnapshot) {
+    //Add the table to be filled in below.
+    $("body").append("<table id='pending_lends_table'></table>");
+    var $pendingLendsTable = $("#pending_lends_table");
+    $pendingLendsTable.append("<tr><th>Item</th><th>Borrower</th><th></th></tr>");
+    //If the use has any lent items.
+    if (lentSnapshot.val() != undefined) {
+      //To store objects containing info about all the lent items.
+      var lentItems = {};
+
+      for (var i = 0; i < lentSnapshot.val().length; i++) {
+        //Store each iterated over transaction ID in variable currentTransactionID.
+        var currentTransactionID = lentSnapshot.val()[i];
+        //Add key-value pair to lentItems, with transactionID as key and blank object as value
+        lentItems[currentTransactionID] = {};
+        //Set transactionID property of that blank object to the transactionID.
+        lentItems[currentTransactionID].transactionID = currentTransactionID;
+
+        //Take snapshot of tracker on Firebase, using the transactionID
+        trackersRef.child(currentTransactionID).once("value", function(trackerSnapshot) {
+
+          lentItems[trackerSnapshot.val()["transactionID"]]["upc"] = trackerSnapshot.val()["upc"];
+          lentItems[trackerSnapshot.val()["transactionID"]]["borrowConfirmed"] = trackerSnapshot.val()["borrowConfirmed"];
+          lentItems[trackerSnapshot.val()["transactionID"]]["borrower"] = trackerSnapshot.val()["borrower"];
+
+          //If an item's borrowConfirmed is false, then go through and add the other info about it.
+          if (!lentItems[trackerSnapshot.val()["transactionID"]]["borrowConfirmed"] ) {
+
+            itemsRef.child(trackerSnapshot.val()["upc"]).once("value", function(itemSnapshot) {
+
+              //Iterate over items in lentItems, and if the itemSnapshot is a match then set itemDetails and owner properties.
+              for (var item in lentItems) {
+
+                if (itemSnapshot.val()["upc"] === lentItems[item]["upc"]) {
+
+                  lentItems[item]["itemDetails"] = itemSnapshot.val()["itemDetails"];
+                  lentItems[item]["owner"] = itemSnapshot.val()["owner"];
+
+                  //For each of the items, which all have borrowConfirmed as false, appends them to the table and adds a button which
+                  //cancels the lend and removes it from the lender and borrower's ledgers on Firebase (and lender's locally)
+                  var $cancelLendButton = $("<button value='" + lentItems[item]["transactionID"] + "," + lentItems[item]["borrower"] + "," + lentItems[item]["upc"] +  "'>Cancel Lend</button>")
+                    .on("click", function(event) {
+
+                      that.currentUser.cancelLend(this.value);
+                    });
+
+                  $pendingLendsTable
+                    .append("<tr id='upc" + lentItems[item]["upc"] + "'><td>" + lentItems[item]["itemDetails"] + "</td><td>" + lentItems[item]["borrower"] + "</td><td></td></tr>")
+
+                  $("#upc" + lentItems[item]["upc"]).append($cancelLendButton);
+
+                }
+              }
+            });
+          }
+          //If an item's borrowConfirmed is true, delete it from lentItems and check if lentItems is empty.
+          else {
+            delete lentItems[trackerSnapshot.val()["transactionID"]];
+
+            //Checks if there are no items left in lentItems
+            var lentItemsLength = 0;
+            for (var item in lentItems) {
+              lentItemsLength ++;
+            }
+            //If there are not, appends that message to the table.
+            if (lentItemsLength === 0) {
+              $pendingLendsTable.append("<tr><td>No pending lends.</td></tr>");
+            }
+
+          }
+        });
+      }
+    }
+
+    //If the user doesn't have any lent items.
+    else {
+      $pendingLendsTable.append("<tr><td>No pending lends.</td></tr>");
+    }
+  });
+}
+
 
 Polonius.prototype.initializeNewLend = function(thisPolonius, upc, borrower) {
   thisPolonius.currentUser.initializeLend(upc, borrower);
