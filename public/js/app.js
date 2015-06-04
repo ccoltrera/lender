@@ -46,7 +46,7 @@ User.prototype.createItem = function(itemDetails) {
 
 }
 //Generates a UPC for item, using the itemDetails and the userIdent converted to unicode and turned into
-//a string separated by '-'. Function can be changed later for more advanced UPC generation.
+//a string separated by '
 User.prototype.generateUPC = function(itemDetails) {
   var slug, unicode, upc;
   slug = this.userIdent + itemDetails;
@@ -345,6 +345,119 @@ Polonius.prototype.setUserDropdown = function() {
   });
 };
 
-var polonius = new Polonius();
+//obtains values for making ledger page tables
+Polonius.prototype.renderValues =function() {
+  //to change based on Polonius user
+  var userIdent = this.currentUser.userIdent;
 
-polonius.setUserFromFirebase("Mike");
+  var users, trackers, item, itemSpecific, transactionID;
+  var upcLentOut = []; //holds upc codes for items lent out
+  var upcBorrowed = []; //holds upc codes for borrowed items
+  var borrower = [];//holds borrower names for lent half of ledger
+  var allItems = [];//stores every items key (upc)
+  var owner = [];//stores the values of the owners that have been tracked
+  var itemNamesBorrowed = [];//stores the itemDetails of items borrowed
+  var itemNamesLent = []; //stores the itemDetails of items Lent out
+  var transIds = [];//stores all the transaction IDs
+  var borrowConfirmed = [];//stores boolean values for when users confirm items
+                           //have been borrowed
+  var itemReceived = [];//stores boolean values for when users receive items
+  var itemReturned = [];//stores boolean values for when users confirm returns
+  var storedArrays = [];//stores the arrays needed to make table and input work
+
+
+  //for trackers objects in firebase
+  trackersRef.once('value', function(trackersSnapshot) {
+    trackers = trackersSnapshot.val(); //should give objects with trackers titles
+
+    //gets values within objects
+    for (var transactionID in trackers) {
+      // console.log('trackers ' + userIdent);
+      // console.log('trackers ' + trackers[transactionID].owner);
+      if (userIdent == trackers[transactionID].owner) {
+        //push to give arrays the values
+        upcLentOut.push(trackers[transactionID].upc);
+        borrower.push(trackers[transactionID].borrower);
+        borrowConfirmed.push(trackers[transactionID].borrowConfirmed);
+        itemReceived.push(trackers[transactionID].itemReceived)
+        itemReturned.push(trackers[transactionID].itemReturned)
+      } else if(userIdent == trackers[transactionID].borrower) {
+        //gets the upc of the items being borrowed
+        upcBorrowed.push(trackers[transactionID].upc);
+      }
+    };
+  });
+
+  //for scope issues
+  var that = this;
+
+  //for items objects in firebase
+  itemsRef.once('value', function(itemsSnapshot) {
+    items = itemsSnapshot.val();
+
+    //Object.keys will give the key values which = upc for all items
+    var allItems = Object.keys(items);
+    for (var k = 0; k < allItems.length; k++){
+      for(var a = 0; a < upcBorrowed.length; a++){
+
+        //should find the values needed only from the upc codes that match
+        if (allItems[k] == upcBorrowed[a]) {
+
+          owner.push(items[upcBorrowed[a]].owner);
+          itemNamesBorrowed.push(items[upcBorrowed[a]].itemDetails)
+        }
+      }
+
+      for(var l = 0; l < upcLentOut.length; l++){
+        if (allItems[k] == upcLentOut[l]) {
+          itemNamesLent.push(items[upcLentOut[l]].itemDetails)
+        };
+      };
+    };
+    storedArrays.push(owner);
+    storedArrays.push(itemNamesLent);
+    storedArrays.push(itemNamesBorrowed);
+    storedArrays.push(borrower);
+    storedArrays.push(borrowConfirmed);
+    storedArrays.push(itemReceived);
+    storedArrays.push(itemReturned);
+    that.renderTable(storedArrays);
+  });
+
+};
+
+//makes tables for ledger page
+Polonius.prototype.renderTable =function(storedArrays) {
+  var lentTable, lRow, bRow;
+  var owner = storedArrays[0];
+  var itemNamesLent = storedArrays[1];
+  var itemNamesBorrowed = storedArrays[2];
+  var borrower = storedArrays[3];
+  var borrowConfirmed = storedArrays[4];
+  var itemReceived = storedArrays[5];
+  var itemReturned = storedArrays[6];
+
+  console.log(storedArrays);
+
+  //for lentTable
+  $lentTable = $('#lent-table');
+  for (t = 0; t < borrower.length; t++) {
+    $lRow = $('<tr>').append('<td><input type="checkbox"></input></td><td>' + itemNamesLent[t] + '</td><td>' + borrower[t] +'</td></tr>');
+    $lentTable.append($lRow);
+  }
+
+  //for borrow table
+  $borrowedTable = $('#borrowed-table');
+  for (b = 0; b < owner.length; b++) {
+    $bRow = $('<tr>').append('<td><input type="checkbox"></input></td><td>' + itemNamesBorrowed[b] + '</td><td>' + owner[b] +'</td></tr>');
+    $borrowedTable.append($bRow);
+  }
+}
+
+window.onload = function () {
+  //to load html table before js is called
+  var polonius = new Polonius();
+
+};
+
+
