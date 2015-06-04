@@ -36,6 +36,7 @@ User.prototype.createItem = function(itemDetails) {
   var upc, item;
   upc = this.generateUPC(itemDetails);
   item = new Item(this.userIdent, itemDetails);
+  item.upc = upc;
   //Adds UPC to user's inventory
   this.inventory.push(upc);
   //Adds upc to Firebase inventory array.
@@ -68,6 +69,7 @@ User.prototype.initializeLend = function(upc, borrower) {
 
   transactionID = this.generateTransactionID(upc,borrower);
   tracker = new Tracker(upc, borrower);
+  tracker.transactionID = transactionID;
   //Adds transactionID to user's ledger["lent"] browser side.
   this.ledger["lent"].push(transactionID);
   //Adds transactionID to user's ledger["lent"] on Firebase.
@@ -75,7 +77,12 @@ User.prototype.initializeLend = function(upc, borrower) {
   //Takes snapshot of borrower's ledger["borrowed"] on Firebase, then adds transactionID with appropriate key.
   usersRef.child(borrower + "/ledger/borrowed/").once('value', function(borrowerLedgerSnapshot) {
 
-    usersRef.child(borrower + "/ledger/borrowed/" + (borrowerLedgerSnapshot.val().length) ).set(transactionID);
+    if (borrowerLedgerSnapshot.val()) {
+      usersRef.child(borrower + "/ledger/borrowed/" + (borrowerLedgerSnapshot.val().length) ).set(transactionID);
+    }
+    else {
+      usersRef.child(borrower + "/ledger/borrowed/" + 0 ).set(transactionID);
+    }
 
   });
   //Adds tracker to Firebase
@@ -99,7 +106,9 @@ User.prototype.confirmReturn = function() {
 
 }
 
-User.prototype.confirmBorrow = function() {
+User.prototype.confirmBorrow = function(transactionID) {
+
+  trackersRef.child(transactionID + "/borrowConfirmed").set(true);
 
 }
 
@@ -118,14 +127,14 @@ function Polonius() {
 }
 
 //Loads a form into the body, and passes the function to be used with the form data.
-Polonius.prototype.loadForm = function(formName, functionToCall) {
+Polonius.prototype.loadForm = function(formName, functionToCall, locationID) {
   var parseForm, thisPolonius;
 
   parseForm = this.parseForm;
   thisPolonius = this;
 
   $.get(formName + '.html', function(data) {
-    $("body").html(data);
+    $(locationID).append(data);
     $("#" + formName + "_form").on("submit", function(event) {
       event.preventDefault();
       var parsedData = parseForm($(this).serialize());
@@ -153,14 +162,24 @@ Polonius.prototype.createNewUser = function(thisPolonius, userIdent) {
   thisPolonius.currentUser.initializeUser();
 }
 
+//Sets the new_user.html form in the correct place, and gives it the necessary function.
+Polonius.prototype.setNewUserForm = function() {
+  this.loadForm("new_user", this.createNewUser, "body");
+}
+
 //creates new Item, using the currentUser User() object.
 Polonius.prototype.createNewItem = function(thisPolonius, itemDetails) {
   thisPolonius.currentUser.createItem(itemDetails);
 }
 
+//Sets the new_item.html form in the correct place, and gives it the necessary function.
+Polonius.prototype.setNewItemForm = function() {
+  this.loadForm("new_item", this.createNewItem, "body");
+}
+
 //Takes a userIdent string, pulls a user off of Firebase and sets it as the Polonius() object's currentUser property.
 Polonius.prototype.setUserFromFirebase = function(userIdent) {
-  //
+
   var that = this;
 
   usersRef.child(userIdent).once('value', function(userSnapshot) {
@@ -169,8 +188,11 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
     if (userSnapshot.val()['inventory']) {
       user.inventory = userSnapshot.val()['inventory'];
     }
-    if (userSnapshot.val()['ledger']) {
-      user.ledger = userSnapshot.val()['ledger'];
+    if (userSnapshot.val()['ledger']['borrowed']) {
+      user.ledger.borrowed = userSnapshot.val()['ledger']['borrowed'];
+    }
+    if (userSnapshot.val()['ledger']['lent']) {
+      user.ledger.lent = userSnapshot.val()['ledger']['lent'];
     }
 
     user.userRef = usersRef.child(userIdent);
@@ -180,8 +202,10 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
   });
 }
 
-Polonius.prototype.setNewLendForm = function() {
-  this.loadForm("init_lend", this.initializeNewLend);
+//Sets the init_lend.html form in the correct place, gives it the necessary function, and populates
+//the dropdowns with the necessary information.
+Polonius.prototype.setInitLendForm = function() {
+  this.loadForm("init_lend", this.initializeNewLend, "body");
 
   var that = this;
   //Gets items snapshot from Firebase to populate items dropdown menu
@@ -219,6 +243,89 @@ Polonius.prototype.setNewLendForm = function() {
 
 }
 
+Polonius.prototype.setConfirmBorrowsForm = function() {
+
+  var that = this;
+
+  usersRef.child(this.currentUser.userIdent + "/ledger/borrowed").once("value", function(borrowedSnapshot) {
+    //Add the table to be filled in below.
+    $("body").append("<table id='confirm_borrows_table'></table>");
+    var $confirmBorrowsTable = $("#confirm_borrows_table");
+    $confirmBorrowsTable.append("<tr><th>Item</th><th>Lender</th><th></th></tr>");
+    //If the use has any borrowed items.
+    if (borrowedSnapshot.val() != undefined) {
+      //To store objects containing info about all the borrowed items.
+      var borrowedItems = {};
+
+      for (var i = 0; i < borrowedSnapshot.val().length; i++) {
+        //Store each iterated over transaction ID in variable currentTransactionID.
+        var currentTransactionID = borrowedSnapshot.val()[i];
+        //Add key-value pair to borrowedItems, with transactionID as key and blank object as value
+        borrowedItems[currentTransactionID] = {};
+        //Set transactionID property of that blank object to the transactionID.
+        borrowedItems[currentTransactionID].transactionID = currentTransactionID;
+
+        //Take snapshot of tracker on Firebase, using the transactionID
+        trackersRef.child(currentTransactionID).once("value", function(trackerSnapshot) {
+
+          borrowedItems[trackerSnapshot.val()["transactionID"]]["upc"] = trackerSnapshot.val()["upc"];
+          borrowedItems[trackerSnapshot.val()["transactionID"]]["borrowConfirmed"] = trackerSnapshot.val()["borrowConfirmed"];
+
+          //If an item's borrowConfirmed is false, then go through and add the other info about it.
+          if (!borrowedItems[trackerSnapshot.val()["transactionID"]]["borrowConfirmed"] ) {
+
+            itemsRef.child(trackerSnapshot.val()["upc"]).once("value", function(itemSnapshot) {
+
+              //Iterate over items in borrowedItems, and if the itemSnapshot is a match then set itemDetails and owner properties.
+              for (var item in borrowedItems) {
+
+                if (itemSnapshot.val()["upc"] === borrowedItems[item]["upc"]) {
+
+                  borrowedItems[item]["itemDetails"] = itemSnapshot.val()["itemDetails"];
+                  borrowedItems[item]["owner"] = itemSnapshot.val()["owner"];
+
+                  //For each of the items, which all have borrowConfirmed as false, appends them to the table and adds a button which
+                  //changes borrowConfirms to true.
+                  var $borrowConfirmedButton = $("<button value='" + borrowedItems[item]["transactionID"] + "'>Confirm Borrow</button>")
+                    .on("click", function(event) {
+                      that.currentUser.confirmBorrow(this.value);
+                    });
+
+                  $confirmBorrowsTable
+                    .append("<tr id='upc" + borrowedItems[item]["upc"] + "'><td>" + borrowedItems[item]["itemDetails"] + "</td><td>" + borrowedItems[item]["owner"] + "</td><td></td></tr>")
+
+                  $("#upc" + borrowedItems[item]["upc"]).append($borrowConfirmedButton);
+
+                }
+              }
+            });
+          }
+          //If an item's borrowConfirmed is true, delete it from borrowedItems and check if borrowedItems is empty.
+          else {
+            delete borrowedItems[trackerSnapshot.val()["transactionID"]];
+
+            //Checks if there are no items left in borrowedItems
+            var borrowedItemsLength = 0;
+            for (var item in borrowedItems) {
+              borrowedItemsLength ++;
+            }
+            //If there are not, appends that message to the table.
+            if (borrowedItemsLength === 0) {
+              $confirmBorrowsTable.append("<tr><td>No waiting borrows.</td></tr>");
+            }
+
+          }
+        });
+      }
+    }
+
+    //If the user doesn't have any borrowed items.
+    else {
+      $confirmBorrowsTable.append("<tr><td>No waiting borrows.</td></tr>");
+    }
+  });
+}
+
 Polonius.prototype.initializeNewLend = function(thisPolonius, upc, borrower) {
   thisPolonius.currentUser.initializeLend(upc, borrower);
 }
@@ -252,9 +359,6 @@ Polonius.prototype.setUserDropdown = function() {
     }
   });
 };
-
-var x = new Polonius();
-x.setUserDropdown();
 
 //obtains values for making ledger page tables
 Polonius.prototype.renderValues =function() {
@@ -364,8 +468,9 @@ Polonius.prototype.renderTable =function(storedArrays) {
     $borrowedTable.append($bRow);
   }
 }
-window.onload = function () {
-  //to load html table before js is called
-  var table = new Polonius();
-  table.renderValues();
-};
+
+
+var polonius = new Polonius();
+
+
+
