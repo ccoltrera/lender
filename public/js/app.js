@@ -241,7 +241,7 @@ Polonius.prototype.setUserDropdown = function() {
     var usersFromFirebase = usersSnapshot.val();
     var namesForDropdown = Object.keys(usersFromFirebase);
     //Use names in object and adds to pulldown list
-
+    console.log(namesForDropdown);
     var options = namesForDropdown;
     // startDDPopulate.textContent = '';
     var opt = 'Find your name';
@@ -257,8 +257,13 @@ Polonius.prototype.setUserDropdown = function() {
       startDDPopulate.appendChild(el);
     }
   });
+  //getting a string from the selected item
 };
+function run() {
+  var selectedUserStr = document.getElementById('selectLoginID').value;
+  console.log(selectedUserStr);
+}
 
-var x = new Polonius();
-x.setUserDropdown();
-//Comment
+var polonius = new Polonius();
+polonius.setUserDropdown();
+
