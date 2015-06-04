@@ -154,20 +154,23 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
   },this));
 }
 
-Polonius.prototype.render =function() {
+Polonius.prototype.renderValues =function() {
+  var userIdent = 'Mike'
   var users, trackers, item, itemSpecific, transactionID;
-  var upc = []; //holds upc codes from tracked items
+  var upcLentOut = []; //holds upc codes for items lent out
+  var upcBorrowed = []; //holds upc codes for borrowed items
   var borrower = [];//holds borrower names for lent half of ledger
   var allItems = [];//stores every items key (upc)
   var owner = [];//stores the values of the owners that have been tracked
-  var itemNames = [];//stores the itemDetails of tracked items
+  var itemNamesBorrowed = [];//stores the itemDetails of items borrowed
+  var itemNamesLent = []; //stores the itemDetails of items Lent out
   var transIds = [];//stores all the transaction IDs
   var borrowConfirmed = [];//stores boolean values for when users confirm items
                            //have been borrowed
   var itemReceived = [];//stores boolean values for when users receive items
   var itemReturned = [];//stores boolean values for when users confirm returns
   var storedArrays = [];//stores the arrays needed to make table and input work
-
+/*
   //not sure if needed goes into user firebase
   usersRef.once('value', function(userSnapshot) {
     users = userSnapshot.val();
@@ -177,43 +180,59 @@ Polonius.prototype.render =function() {
       transIds.push(users[userNames[u]]['ledger']['borrowed']);
     };
   });
+*/
 
-
-  //for trackers objects
+  //for trackers objects in firebase
   trackersRef.once('value', function(trackersSnapshot) {
     trackers = trackersSnapshot.val(); //should give objects with trackers titles
+
     //gets values within objects
     for (var transactionID in trackers) {
-      //push to give arrays the values
-      upc.push(trackers[transactionID].upc);
-      borrower.push(trackers[transactionID].borrower);
-      borrowConfirmed.push(trackers[transactionID].borrowConfirmed);
-      itemReceived.push(trackers[transactionID].itemReceived)
-      itemReturned.push(trackers[transactionID].itemReturned)
+      // console.log('trackers ' + userIdent);
+      // console.log('trackers ' + trackers[transactionID].owner);
+      if (userIdent == trackers[transactionID].owner) {
+        //push to give arrays the values
+        upcLentOut.push(trackers[transactionID].upc);
+        borrower.push(trackers[transactionID].borrower);
+        borrowConfirmed.push(trackers[transactionID].borrowConfirmed);
+        itemReceived.push(trackers[transactionID].itemReceived)
+        itemReturned.push(trackers[transactionID].itemReturned)
+      } else if(userIdent == trackers[transactionID].borrower) {
+        //gets the upc of the items being borrowed
+        upcBorrowed.push(trackers[transactionID].upc);
+      }
     };
   });
 
+  //for scope issues
   var that = this;
-  //for items objects
+
+  //for items objects in firebase
   itemsRef.once('value', function(itemsSnapshot) {
     items = itemsSnapshot.val();
+
     //Object.keys will give the key values which = upc for all items
     var allItems = Object.keys(items);
-
     for (var k = 0; k < allItems.length; k++){
-      for(var a = 0; a < upc.length; a++){
-        //should find the values needed only from the upc codes that match
+      for(var a = 0; a < upcBorrowed.length; a++){
 
-        if (allItems[k] == upc[a]) {
-          //access the specified object that is being tracked
-          var itemSpecific = items[upc[a]];
-          owner.push(itemSpecific.owner);
-          itemNames.push(itemSpecific.itemDetails)
+        //should find the values needed only from the upc codes that match
+        if (allItems[k] == upcBorrowed[a]) {
+
+          owner.push(items[upcBorrowed[a]].owner);
+          itemNamesBorrowed.push(items[upcBorrowed[a]].itemDetails)
         }
       }
-    }
+
+      for(var l = 0; l < upcLentOut.length; l++){
+        if (allItems[k] == upcLentOut[l]) {
+          itemNamesLent.push(items[upcLentOut[l]].itemDetails)
+        };
+      };
+    };
     storedArrays.push(owner);
-    storedArrays.push(itemNames);
+    storedArrays.push(itemNamesLent);
+    storedArrays.push(itemNamesBorrowed);
     storedArrays.push(borrower);
     storedArrays.push(borrowConfirmed);
     storedArrays.push(itemReceived);
@@ -225,27 +244,25 @@ Polonius.prototype.render =function() {
 
 Polonius.prototype.renderTable =function(storedArrays) {
   var lentTable, lRow, bRow;
-  var arrays = storedArrays;
-  var owner = arrays[0];
-  var itemNames = arrays[1];
-  var borrower = arrays[2];
-  var borrowConfirmed = arrays[3];
-  var itemReceived = arrays[4];
-  var itemReturned = arrays[5];
+  var owner = storedArrays[0];
+  var itemNamesLent = storedArrays[1];
+  var itemNamesBorrowed = storedArrays[2];
+  var borrower = storedArrays[3];
+  var borrowConfirmed = storedArrays[4];
+  var itemReceived = storedArrays[5];
+  var itemReturned = storedArrays[6];
 
   //for lentTable
   $lentTable = $('#lent-table');
-  for (t = 0; t < owner.length; t++) {
-    $lRow = $('<tr>').append('<td><input type="checkbox"></input></td><td>' + itemNames[t] + '</td><td>' + borrower[t] +'</td></tr>');
-    console.log($lRow);
+  for (t = 0; t < borrower.length; t++) {
+    $lRow = $('<tr>').append('<td><input type="checkbox"></input></td><td>' + itemNamesLent[t] + '</td><td>' + borrower[t] +'</td></tr>');
     $lentTable.append($lRow);
   }
 
   //for borrow table
   $borrowedTable = $('#borrowed-table');
-  for (t = 0; t < owner.length; t++) {
-    $bRow = $('<tr>').append('<td><input type="checkbox"></input></td><td>' + itemNames[t] + '</td><td>' + owner[t] +'</td></tr>');
-    console.log($bRow);
+  for (b = 0; b < owner.length; b++) {
+    $bRow = $('<tr>').append('<td><input type="checkbox"></input></td><td>' + itemNamesBorrowed[b] + '</td><td>' + owner[b] +'</td></tr>');
     $borrowedTable.append($bRow);
   }
 
@@ -254,6 +271,6 @@ Polonius.prototype.renderTable =function(storedArrays) {
 
 //for testing purposes
 var table = new Polonius();
-table.render();
+table.renderValues();
 
 };
