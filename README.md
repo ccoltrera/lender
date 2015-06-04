@@ -29,6 +29,6 @@ TODO: express?
 
 ##Contributors
 
-Colin Coltera, Kate Stearns, Sue Rosenfield-Hernandez, Michael Tse
+Colin Coltera, Kate Stearns, Sue Rosenfield, Michael Tse
 
 
