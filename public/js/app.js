@@ -343,21 +343,21 @@ function Tracker(upc, borrower) {
 
 Polonius.prototype.setUserDropdown = function() {
 
-  $('#loginArea').load('login.html')
+  $('#loginArea').load('login.html') //loads
   usersRef.on('value', function(usersSnapshot) {
     var startDDPopulate = document.getElementById('selectLoginID');
     var user;
     //Pulling names from Firebase
     var usersFromFirebase = usersSnapshot.val();
     var namesForDropdown = Object.keys(usersFromFirebase);
-    //Use names in object and adds to pulldown list
+
     var options = namesForDropdown;
-    // startDDPopulate.textContent = '';
     var opt = 'Find your name';
     var el = document.createElement('option');
     el.textContent = opt;
     el.value = opt;
     startDDPopulate.appendChild(el);
+
     for(var i=0; i< options.length; i++) {
       var opt = options[i];
       var el = document.createElement('option');
@@ -365,20 +365,20 @@ Polonius.prototype.setUserDropdown = function() {
       el.value = opt;
       startDDPopulate.appendChild(el);
     }
-    // function run() {
-    selectedUserStr = document.getElementById('selectLoginID').value;
-    polonius.setUserFromFirebase(selectedUserStr);
-    return selectedUserStr;
-
 
     $('#loginButton').click(function(){
-      // run();
-      alert('hi');
+      selectedUserStr = document.getElementById('selectLoginID').value;
+      polonius.setUserFromFirebase(selectedUserStr);
       console.log(selectedUserStr);
+      $('#ledgerArea').load('ledger.html')
     });
 
   });
 };
+
+var polonius = new Polonius();
+polonius.setUserDropdown();
+
 
 //obtains values for making ledger page tables
 Polonius.prototype.renderValues =function() {
@@ -490,4 +490,3 @@ Polonius.prototype.renderTable =function(storedArrays) {
 }
 
 
-var polonius = new Polonius();
