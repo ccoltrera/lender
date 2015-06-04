@@ -155,7 +155,8 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
 }
 
 Polonius.prototype.renderValues =function() {
-  var userIdent = 'Mike'
+  var userIdent = 'Mike';
+
   var users, trackers, item, itemSpecific, transactionID;
   var upcLentOut = []; //holds upc codes for items lent out
   var upcBorrowed = []; //holds upc codes for borrowed items
