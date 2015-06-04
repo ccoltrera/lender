@@ -115,12 +115,13 @@ User.prototype.confirmBorrow = function(transactionID) {
 
 }
 
-User.prototype.cancelLend = function(transactionIDBorrowerString) {
+User.prototype.cancelLend = function(transactionIDBorrowerUPCString) {
   var that = this;
 
-  var transactionIDBorrowerArray = transactionIDBorrowerString.split(",");
-  var transactionID = transactionIDBorrowerArray[0];
-  var borrower = transactionIDBorrowerArray[1];
+  var transactionIDBorrowerUPCArray = transactionIDBorrowerUPCString.split(",");
+  var transactionID = transactionIDBorrowerUPCArray[0];
+  var borrower = transactionIDBorrowerUPCArray[1];
+  var upc = transactionIDBorrowerUPCArray[2]
 
   //Deletes the tracker
   trackersRef.child(transactionID).remove();
@@ -133,6 +134,10 @@ User.prototype.cancelLend = function(transactionIDBorrowerString) {
         //Removes it from the found location.
         usersRef.child(that.userIdent + "/ledger/lent/" + i).remove();
 
+        //Syncs Firebase changes to server side.
+        usersRef.child(that.userIdent + "/ledger/lent/").once("value", function(ledgerLentSnapshot) {
+          that.ledger.lent = ledgerLentSnapshot.val();
+        });
       }
     }
   });
@@ -147,6 +152,9 @@ User.prototype.cancelLend = function(transactionIDBorrowerString) {
       }
     }
   });
+
+  //Find the item by upc, and changes its lentOut Boolean to false
+  itemsRef.child(upc + "/lentOut").set(false);
 
 }
 
@@ -408,7 +416,7 @@ Polonius.prototype.setPendingLendsTable = function() {
 
                   //For each of the items, which all have borrowConfirmed as false, appends them to the table and adds a button which
                   //cancels the lend and removes it from the lender and borrower's ledgers on Firebase (and lender's locally)
-                  var $cancelLendButton = $("<button value='" + lentItems[item]["transactionID"] + "," + lentItems[item]["borrower"] +  "'>Cancel Lend</button>")
+                  var $cancelLendButton = $("<button value='" + lentItems[item]["transactionID"] + "," + lentItems[item]["borrower"] + "," + lentItems[item]["upc"] +  "'>Cancel Lend</button>")
                     .on("click", function(event) {
 
                       that.currentUser.cancelLend(this.value);
