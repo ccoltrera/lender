@@ -253,7 +253,7 @@ Polonius.prototype.setConfirmBorrowsForm = function() {
     var $confirmBorrowsTable = $("#confirm_borrows_table");
     $confirmBorrowsTable.append("<tr><th>Item</th><th>Lender</th><th></th></tr>");
     //If the use has any borrowed items.
-    if (borrowedSnapshot.val()) {
+    if (borrowedSnapshot.val() != undefined) {
       //To store objects containing info about all the borrowed items.
       var borrowedItems = {};
 
@@ -299,6 +299,21 @@ Polonius.prototype.setConfirmBorrowsForm = function() {
                 }
               }
             });
+          }
+          //If an item's borrowConfirmed is true, delete it from borrowedItems and check if borrowedItems is empty.
+          else {
+            delete borrowedItems[trackerSnapshot.val()["transactionID"]];
+
+            //Checks if there are no items left in borrowedItems
+            var borrowedItemsLength = 0;
+            for (var item in borrowedItems) {
+              borrowedItemsLength ++;
+            }
+            //If there are not, appends that message to the table.
+            if (borrowedItemsLength === 0) {
+              $confirmBorrowsTable.append("<tr><td>No waiting borrows.</td></tr>");
+            }
+
           }
         });
       }
@@ -454,10 +469,8 @@ Polonius.prototype.renderTable =function(storedArrays) {
   }
 }
 
-window.onload = function () {
-  //to load html table before js is called
-  var polonius = new Polonius();
 
-};
+var polonius = new Polonius();
+
 
 
