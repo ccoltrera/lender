@@ -1,3 +1,5 @@
+window.onload = function () {
+
 var lenderAppRef, usersRef, itemsRef, trackersRef;
 
 //Creates a Firebase() object, which links to Colin's Firebase
@@ -62,94 +64,7 @@ User.prototype.generateUPC = function(itemDetails) {
 }
 
 //should render the table
-User.prototype.render =function() {
-  var trackers, item, itemSpecific, transId, lentPerson, lentTable;
-  var upc = []; //holds upc codes from tracked items
-  var borrower = [];//holds borrower names for lent half of ledger
-  var allItems = [];//stores every items key (upc)
-  var owner = [];//stores the values of the owners that have been tracked
-  var itemNames = [];//stores the itemDetails of tracked items
 
-
-  //for trackers objects
-  trackersRef.once('value', function(trackersSnapshot) {
-    trackers = trackersSnapshot.val(); //should give objects with trackers titles
-    //gets values within objects
-    for (var transactionID in trackers) {
-      //push to give arrays the values
-      upc.push(trackers[transactionID].upc);
-      borrower.push(trackers[transactionID].borrower);
-    };
-    // console.log(upc);
-    // console.log('inside snapshot: ' + upc);
-  });
-  // console.log('Outside snapshot: ' + upc);
-
-  //for items objects
-  itemsRef.once('value', function(itemsSnapshot) {
-    items = itemsSnapshot.val();
-    //Object.keys will give the key values which = upc for all items
-    var allItems = Object.keys(items);
-
-    //matches inside snap of upc
-    console.log('items snapshot: ' + upc);
-
-    // console.log('tracked upc ' + upc);
-    for (var k = 0; k < allItems.length; k++){
-      for(var a = 0; a < upc.length; a++){
-        //should find the values needed only from the upc codes that match
-        if (allItems[k] == upc[a]) {
-          // console.log('all item ' + allItems[k]);
-          // console.log('tracked upc ' + upc[a]);
-          //access the specified object that is being tracked
-          var itemSpecific = items[upc[a]];
-          console.log(itemSpecific);
-          for (var itemsID in itemSpecific) {
-            console.log(itemSpecific[itemsID].owner);
-            console.log(itemSpecific[itemsID].itemDetails);
-            owner.push(itemSpecific[itemsID].owner);
-            itemNames.push(itemSpecific[itemsID].itemDetails);
-          }
-          k++;
-          a++;
-        }
-      }
-    }
-    // console.log(owner);
-    // console.log(itemNames)
-
-
-
-    // while (upc[0] == ) {};
-      for (var itemsID in items) {
-        // console.log(items[itemsID].owner);
-        // console.log(items[itemsID].itemDetails);
-      }
-
-  });
-
-//table creations
-  // for (b = 0; b < borrower.length; b++) {
-
-    var table       = document.getElementById('lent-table');
-    var tr          = document.createElement('tr');
-    var td          = document.createElement('td');
-    var newText     = document.createTextNode('some testing text');
-    td.appendChild(newText);
-    tr.appendChild(td);
-  // }
-
-  // $lentTable = $('lent-table')
-  // $lentPerson = $(trackersRef)
-  //for as many transactions there currently are
-
-  // for (var j = 0; j < 1; j++) {
-
-    // $newRow = $('<tr>').append('<td>' +'<input type="checkbox"></input>' + '</td>');
-    // $lentTable.append($newRow);
-  // }
-
-};
 
 
 
@@ -239,11 +154,106 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
   },this));
 }
 
+Polonius.prototype.render =function() {
+  var users, trackers, item, itemSpecific, transactionID;
+  var upc = []; //holds upc codes from tracked items
+  var borrower = [];//holds borrower names for lent half of ledger
+  var allItems = [];//stores every items key (upc)
+  var owner = [];//stores the values of the owners that have been tracked
+  var itemNames = [];//stores the itemDetails of tracked items
+  var transIds = [];//stores all the transaction IDs
+  var borrowConfirmed = [];//stores boolean values for when users confirm items
+                           //have been borrowed
+  var itemReceived = [];//stores boolean values for when users receive items
+  var itemReturned = [];//stores boolean values for when users confirm returns
+  var storedArrays = [];//stores the arrays needed to make table and input work
+
+  //not sure if needed goes into user firebase
+  usersRef.once('value', function(userSnapshot) {
+    users = userSnapshot.val();
+    userNames = Object.keys(users);
+    for (var u = 0; u < userNames.length; u++) {
+      transIds.push(users[userNames[u]]['ledger']['lent']);
+      transIds.push(users[userNames[u]]['ledger']['borrowed']);
+    };
+  });
+
+
+  //for trackers objects
+  trackersRef.once('value', function(trackersSnapshot) {
+    trackers = trackersSnapshot.val(); //should give objects with trackers titles
+    //gets values within objects
+    for (var transactionID in trackers) {
+      //push to give arrays the values
+      upc.push(trackers[transactionID].upc);
+      borrower.push(trackers[transactionID].borrower);
+      borrowConfirmed.push(trackers[transactionID].borrowConfirmed);
+      itemReceived.push(trackers[transactionID].itemReceived)
+      itemReturned.push(trackers[transactionID].itemReturned)
+    };
+  });
+
+  var that = this;
+  //for items objects
+  itemsRef.once('value', function(itemsSnapshot) {
+    items = itemsSnapshot.val();
+    //Object.keys will give the key values which = upc for all items
+    var allItems = Object.keys(items);
+
+    for (var k = 0; k < allItems.length; k++){
+      for(var a = 0; a < upc.length; a++){
+        //should find the values needed only from the upc codes that match
+
+        if (allItems[k] == upc[a]) {
+          //access the specified object that is being tracked
+          var itemSpecific = items[upc[a]];
+          owner.push(itemSpecific.owner);
+          itemNames.push(itemSpecific.itemDetails)
+        }
+      }
+    }
+    storedArrays.push(owner);
+    storedArrays.push(itemNames);
+    storedArrays.push(borrower);
+    storedArrays.push(borrowConfirmed);
+    storedArrays.push(itemReceived);
+    storedArrays.push(itemReturned);
+    that.renderTable(storedArrays);
+  });
+
+};
+
+Polonius.prototype.renderTable =function(storedArrays) {
+  var lentTable, lRow, bRow;
+  var arrays = storedArrays;
+  var owner = arrays[0];
+  var itemNames = arrays[1];
+  var borrower = arrays[2];
+  var borrowConfirmed = arrays[3];
+  var itemReceived = arrays[4];
+  var itemReturned = arrays[5];
+
+  //for lentTable
+  $lentTable = $('#lent-table');
+  for (t = 0; t < owner.length; t++) {
+    $lRow = $('<tr>').append('<td><input type="checkbox"></input></td><td>' + itemNames[t] + '</td><td>' + borrower[t] +'</td></tr>');
+    console.log($lRow);
+    $lentTable.append($lRow);
+  }
+
+  //for borrow table
+  $borrowedTable = $('#borrowed-table');
+  for (t = 0; t < owner.length; t++) {
+    $bRow = $('<tr>').append('<td><input type="checkbox"></input></td><td>' + itemNames[t] + '</td><td>' + owner[t] +'</td></tr>');
+    console.log($bRow);
+    $borrowedTable.append($bRow);
+  }
+
+}
 
 
 //for testing purposes
-var person = new User('Mike');
-person.initialize();
-person.createItem('baseball');
-person.generateUPC('baseball')
-person.render();
+var table = new Polonius();
+table.render();
+
+};
