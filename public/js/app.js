@@ -36,6 +36,7 @@ User.prototype.createItem = function(itemDetails) {
   var upc, item;
   upc = this.generateUPC(itemDetails);
   item = new Item(this.userIdent, itemDetails);
+  item.upc = upc;
   //Adds UPC to user's inventory
   this.inventory.push(upc);
   //Adds upc to Firebase inventory array.
@@ -68,6 +69,7 @@ User.prototype.initializeLend = function(upc, borrower) {
 
   transactionID = this.generateTransactionID(upc,borrower);
   tracker = new Tracker(upc, borrower);
+  tracker.transactionID = transactionID;
   //Adds transactionID to user's ledger["lent"] browser side.
   this.ledger["lent"].push(transactionID);
   //Adds transactionID to user's ledger["lent"] on Firebase.
@@ -132,7 +134,7 @@ Polonius.prototype.loadForm = function(formName, functionToCall, locationID) {
   thisPolonius = this;
 
   $.get(formName + '.html', function(data) {
-    $(locationID).html(data);
+    $(locationID).append(data);
     $("#" + formName + "_form").on("submit", function(event) {
       event.preventDefault();
       var parsedData = parseForm($(this).serialize());
@@ -186,8 +188,11 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
     if (userSnapshot.val()['inventory']) {
       user.inventory = userSnapshot.val()['inventory'];
     }
-    if (userSnapshot.val()['ledger']) {
-      user.ledger = userSnapshot.val()['ledger'];
+    if (userSnapshot.val()['ledger']['borrowed']) {
+      user.ledger.borrowed = userSnapshot.val()['ledger']['borrowed'];
+    }
+    if (userSnapshot.val()['ledger']['lent']) {
+      user.ledger.lent = userSnapshot.val()['ledger']['lent'];
     }
 
     user.userRef = usersRef.child(userIdent);
@@ -238,7 +243,79 @@ Polonius.prototype.setInitLendForm = function() {
 
 }
 
-Polonius.prototype.setPendingBorrows = function() {
+Polonius.prototype.setConfirmBorrowsForm = function() {
+
+  var that = this;
+
+  usersRef.child(this.currentUser.userIdent + "/ledger/borrowed").once("value", function(borrowedSnapshot) { console.log("firebase call");
+    //Add the table to be filled in below.
+    $("body").append("<table id='confirm_borrows_table'></table>");
+    var $confirmBorrowsTable = $("#confirm_borrows_table");
+    $confirmBorrowsTable.append("<tr><th>Item</th><th>Lender</th><th></th></tr>");
+    //If the use has any borrowed items.
+    if (borrowedSnapshot.val()) {
+      //To store objects containing info about all the borrowed items.
+      var borrowedItems = {};
+
+      for (var i = 0; i < borrowedSnapshot.val().length; i++) {
+        //Store each iterated over transaction ID in variable currentTransactionID.
+        var currentTransactionID = borrowedSnapshot.val()[i];
+        //Add key-value pair to borrowedItems, with transactionID as key and blank object as value
+        borrowedItems[currentTransactionID] = {};
+        //Set transactionID property of that blank object to the transactionID.
+        borrowedItems[currentTransactionID].transactionID = currentTransactionID;
+
+        //Take snapshot of tracker on Firebase, using the transactionID
+        trackersRef.child(currentTransactionID).once("value", function(trackerSnapshot) { console.log("firebase call");
+
+          //ONCE YOU"VE GONE ALL THE WAY DOWN TO ITEMS, DO A CONDITIONAL IN WHICH ONLY ITEMS YET TO BE CONFIRMED SHOW UP ON THE TABLE
+
+          borrowedItems[trackerSnapshot.val()["transactionID"]]["upc"] = trackerSnapshot.val()["upc"];
+          borrowedItems[trackerSnapshot.val()["transactionID"]]["borrowConfirmed"] = trackerSnapshot.val()["borrowConfirmed"];
+
+          //If an item's borrowConfirmed is false, then go through and add the other info about it.
+          if (!borrowedItems[trackerSnapshot.val()["transactionID"]]["borrowConfirmed"] ) {
+
+            itemsRef.child(trackerSnapshot.val()["upc"]).once("value", function(itemSnapshot) { console.log("firebase call");
+
+              //Check if every item in borrowedItems has a upc, if so then write the items where borrowConfirmed is false to the table
+              //with a button that returns their trackerID plugged into that.currentUser.confirmBorrow
+
+              //Iterate over items in borrowedItems, and if the itemSnapshot is a match then set itemDetails and owner properties.
+              for (var item in borrowedItems) {
+
+                if (itemSnapshot.val()["upc"] === borrowedItems[item]["upc"]) {
+
+                  borrowedItems[item]["itemDetails"] = itemSnapshot.val()["itemDetails"];
+                  borrowedItems[item]["owner"] = itemSnapshot.val()["owner"];
+
+                  var $borrowConfirmedButton = $("<button value='" + borrowedItems[item]["transactionID"] + "'>Confirm Borrow</button>");
+
+                  $confirmBorrowsTable
+                    .append("<tr id='tID" + borrowedItems[item]["transactionID"] + "'><td>" + borrowedItems[item]["itemDetails"] + "</td><td>" + borrowedItems[item]["owner"] + "</td><td></td></tr>")
+
+                  $("#tID" + borrowedItems[item]["transactionID"]).hide()//.append($borrowConfirmedButton);
+
+                }
+
+              }
+
+            });
+
+          }
+
+        });
+
+      }
+
+    }
+
+    //If the user doesn't have any borrowed items.
+    else {
+
+    }
+
+  });
 
 }
 
@@ -278,4 +355,4 @@ Polonius.prototype.setUserDropdown = function() {
 
 var polonius = new Polonius();
 
-polonius.setUserFromFirebase("Colin");
+polonius.setUserFromFirebase("Mike");
