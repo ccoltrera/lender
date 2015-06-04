@@ -173,7 +173,7 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
       user.ledger = userSnapshot.val()['ledger'];
     }
 
-    user.userRef = usersRef.child(localStorage['lenderUserIdent']);
+    user.userRef = usersRef.child(userIdent);
 
     that.currentUser = user;
 
@@ -241,7 +241,6 @@ Polonius.prototype.setUserDropdown = function() {
     var usersFromFirebase = usersSnapshot.val();
     var namesForDropdown = Object.keys(usersFromFirebase);
     //Use names in object and adds to pulldown list
-    console.log(namesForDropdown);
     var options = namesForDropdown;
     // startDDPopulate.textContent = '';
     var opt = 'Find your name';
@@ -256,14 +255,27 @@ Polonius.prototype.setUserDropdown = function() {
       el.value = opt;
       startDDPopulate.appendChild(el);
     }
+    // function run() {
+    selectedUserStr = document.getElementById('selectLoginID').value;
+    polonius.setUserFromFirebase(selectedUserStr);
+    return selectedUserStr;
+
+
+    $('#loginButton').click(function(){
+      // run();
+      alert('hi');
+      console.log(selectedUserStr);
+    });
+
   });
-  //getting a string from the selected item
 };
-function run() {
-  var selectedUserStr = document.getElementById('selectLoginID').value;
-  console.log(selectedUserStr);
-}
 
 var polonius = new Polonius();
 polonius.setUserDropdown();
+
+// var $grabNameAndGo = $('#selectLoginID'); //target selector
+// $selectedUserStr = $grabNameAndGo.val(); //get value of what is selected
+// console.log($selectedUserStr);
+// var $loginButton = $('#loginButton'); //target button
+
 
