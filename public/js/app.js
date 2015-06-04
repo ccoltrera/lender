@@ -366,7 +366,7 @@ Polonius.prototype.setUserDropdown = function() {
       startDDPopulate.appendChild(el);
     }
 
-    $('#loginButton').click(function(){
+    $('#loginButton').on("click", function(event) {
       selectedUserStr = document.getElementById('selectLoginID').value;
       polonius.setUserFromFirebase(selectedUserStr);
       console.log(selectedUserStr);
