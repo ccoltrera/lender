@@ -69,6 +69,9 @@ User.prototype.initializeLend = function(upc, borrower) {
 
   transactionID = this.generateTransactionID(upc,borrower);
   tracker = new Tracker(upc, borrower);
+
+  tracker.owner = this.userIdent;
+
   tracker.transactionID = transactionID;
   //Adds transactionID to user's ledger["lent"] browser side.
   this.ledger["lent"].push(transactionID);
