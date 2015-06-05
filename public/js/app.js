@@ -48,15 +48,17 @@ User.prototype.createItem = function(itemDetails) {
 //Generates a UPC for item, using the itemDetails and the userIdent converted to unicode and turned into
 //a string separated by '
 User.prototype.generateUPC = function(itemDetails) {
-  var slug, unicode, upc;
-  slug = this.userIdent + itemDetails;
-  unicode = [];
+  // var slug, unicode, upc;
+  // slug = this.userIdent + itemDetails;
+  // unicode = [];
 
-  for (var i=0; i < slug.length; i++) {
-    unicode.push(slug.charCodeAt(i));
-  }
+  // for (var i=0; i < slug.length; i++) {
+  //   unicode.push(slug.charCodeAt(i));
+  // }
 
-  upc = unicode.join("-");
+  // upc = unicode.join("-");
+
+  var upc = this.userIdent + "--" + itemDetails;
 
   return upc;
 }
@@ -103,10 +105,6 @@ User.prototype.generateTransactionID = function(upc, borrower) {
   transactionID = date.valueOf() + ":" + upc;
 
   return transactionID;
-}
-
-User.prototype.confirmReturn = function() {
-
 }
 
 User.prototype.confirmBorrow = function(transactionID) {
@@ -158,10 +156,6 @@ User.prototype.cancelLend = function(transactionIDBorrowerUPCString) {
 
 }
 
-User.prototype.returnItem = function() {
-
-}
-
 function Item(owner, itemDetails) {
   this.owner = owner;
   this.itemDetails = itemDetails;
@@ -169,11 +163,10 @@ function Item(owner, itemDetails) {
 }
 
 function Polonius() {
-
 }
 
 //Loads a form into the body, and passes the function to be used with the form data.
-Polonius.prototype.loadForm = function(formName, functionToCall, locationID) {
+Polonius.prototype.loadForm = function(formName, functionToCall, locationID, nextStep) {
   var parseForm, thisPolonius;
 
   parseForm = this.parseForm;
@@ -185,6 +178,7 @@ Polonius.prototype.loadForm = function(formName, functionToCall, locationID) {
       event.preventDefault();
       var parsedData = parseForm($(this).serialize());
       functionToCall(thisPolonius, parsedData[0], parsedData[1], parsedData[2]);
+      nextStep();
     });
   });
 }
@@ -208,21 +202,6 @@ Polonius.prototype.createNewUser = function(thisPolonius, userIdent) {
   thisPolonius.currentUser.initializeUser();
 }
 
-//Sets the new_user.html form in the correct place, and gives it the necessary function.
-Polonius.prototype.setNewUserForm = function() {
-  this.loadForm("new_user", this.createNewUser, "body");
-}
-
-//creates new Item, using the currentUser User() object.
-Polonius.prototype.createNewItem = function(thisPolonius, itemDetails) {
-  thisPolonius.currentUser.createItem(itemDetails);
-}
-
-//Sets the new_item.html form in the correct place, and gives it the necessary function.
-Polonius.prototype.setNewItemForm = function() {
-  this.loadForm("new_item", this.createNewItem, "body");
-}
-
 //Takes a userIdent string, pulls a user off of Firebase and sets it as the Polonius() object's currentUser property.
 Polonius.prototype.setUserFromFirebase = function(userIdent) {
 
@@ -234,18 +213,90 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
     if (userSnapshot.val()['inventory']) {
       user.inventory = userSnapshot.val()['inventory'];
     }
-    if (userSnapshot.val()['ledger']['borrowed']) {
-      user.ledger.borrowed = userSnapshot.val()['ledger']['borrowed'];
-    }
-    if (userSnapshot.val()['ledger']['lent']) {
-      user.ledger.lent = userSnapshot.val()['ledger']['lent'];
+    if (userSnapshot.val()['ledger']) {
+
+      if (userSnapshot.val()['ledger']['borrowed']) {
+        user.ledger.borrowed = userSnapshot.val()['ledger']['borrowed'];
+      }
+      if (userSnapshot.val()['ledger']['lent']) {
+        user.ledger.lent = userSnapshot.val()['ledger']['lent'];
+      }
+
     }
 
     user.userRef = usersRef.child(userIdent);
 
     that.currentUser = user;
 
+    //that.renderValues();
+
   });
+}
+
+Polonius.prototype.setUserDropdown = function() {
+
+  var that = this;
+
+  $("#content").append($("<div class='col-xs-5' id='loginArea'><a href='login.html'>LOGIN</a></div>"));
+
+  $('#loginArea').load('login.html') //loads
+
+  usersRef.on('value', function(usersSnapshot) {
+    if (usersSnapshot.val()) {
+
+      var startDDPopulate = document.getElementById('selectLoginID');
+      var user;
+      //Pulling names from Firebase
+      var usersFromFirebase = usersSnapshot.val();
+      var namesForDropdown = Object.keys(usersFromFirebase);
+
+      var options = namesForDropdown;
+      var opt = 'Find your name';
+      var el = document.createElement('option');
+      el.textContent = opt;
+      el.value = opt;
+      startDDPopulate.appendChild(el);
+
+      for(var i=0; i< options.length; i++) {
+        var opt = options[i];
+        var el = document.createElement('option');
+        el.textContent = opt;
+        el.value = opt;
+        startDDPopulate.appendChild(el);
+      }
+
+      $('#loginButton').on("click", function(event) {
+        var selectedUserStr = document.getElementById('selectLoginID').value;
+        that.setUserFromFirebase(selectedUserStr);
+        localStorage.lenderUserIdent = selectedUserStr;
+
+
+        $('#content').html('');
+        $("#navigation").show();
+      });
+
+    }
+
+  });
+};
+
+//Sets the new_user.html form in the correct place, and gives it the necessary function.
+Polonius.prototype.setNewUserForm = function() {
+  $("#content").append("<div class='col-xs-1'></div><div class='col-xs-5' id='signUpArea'><p>Sign Up</p></div>")
+  this.loadForm("new_user", this.createNewUser, "#signUpArea", function(){
+    $("#navigation").show();
+    $("#content").html("");
+  });
+}
+
+//creates new Item, using the currentUser User() object.
+Polonius.prototype.createNewItem = function(thisPolonius, itemDetails) {
+  thisPolonius.currentUser.createItem(itemDetails);
+}
+
+//Sets the new_item.html form in the correct place, and gives it the necessary function.
+Polonius.prototype.setNewItemForm = function() {
+  this.loadForm("new_item", this.createNewItem, "body");
 }
 
 //Sets the init_lend.html form in the correct place, gives it the necessary function, and populates
@@ -470,44 +521,6 @@ function Tracker(upc, borrower) {
   this.itemReceived = false;
 }
 
-Polonius.prototype.setUserDropdown = function() {
-
-  $('#loginArea').load('login.html') //loads
-  usersRef.on('value', function(usersSnapshot) {
-    var startDDPopulate = document.getElementById('selectLoginID');
-    var user;
-    //Pulling names from Firebase
-    var usersFromFirebase = usersSnapshot.val();
-    var namesForDropdown = Object.keys(usersFromFirebase);
-
-    var options = namesForDropdown;
-    var opt = 'Find your name';
-    var el = document.createElement('option');
-    el.textContent = opt;
-    el.value = opt;
-    startDDPopulate.appendChild(el);
-
-    for(var i=0; i< options.length; i++) {
-      var opt = options[i];
-      var el = document.createElement('option');
-      el.textContent = opt;
-      el.value = opt;
-      startDDPopulate.appendChild(el);
-    }
-
-    $('#loginButton').on("click", function(event) {
-      selectedUserStr = document.getElementById('selectLoginID').value;
-      polonius.setUserFromFirebase(selectedUserStr);
-      console.log(selectedUserStr);
-      $('#ledgerArea').load('ledger.html')
-    });
-
-  });
-};
-
-var polonius = new Polonius();
-polonius.setUserDropdown();
-
 //obtains values for making ledger page tables
 Polonius.prototype.renderValues =function() {
   //to change based on Polonius user
@@ -671,9 +684,22 @@ Polonius.prototype.renderTable =function(storedArrays) {
     };
   };
 };
+
+
+var polonius = new Polonius();
+
 //Loads html table before js is called
 window.onload = function () {
-  var table = new Polonius();
-  table.renderValues();
+
+  if (localStorage["lenderUserIdent"]) {
+    polonius.setUserFromFirebase(localStorage["lenderUserIdent"]);
+  }
+  else
+  {
+    $("#navigation").hide();
+    polonius.setUserDropdown();
+    polonius.setNewUserForm();
+  }
+
 };
 
