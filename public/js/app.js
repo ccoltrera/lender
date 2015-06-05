@@ -313,6 +313,7 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
     //that.renderValues();
     $("#content").html("");
     $("#navigation").show();
+    $("#user-ident").html("Welcome back, " + that.currentUser.userIdent + "!");
     that.setLentLedgerTable();
     that.setBorrowedLedgerTable();
 
