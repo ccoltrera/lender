@@ -266,7 +266,7 @@ Polonius.prototype.loadForm = function(formName, functionToCall, locationID, nex
 
 //Parses the serialized data from a form, returns array of form values without their associated names.
 Polonius.prototype.parseForm = function(serializedData) {
-  var unplussed = serializedData.replace(/\+/g,' ');
+  var unplussed = serializedData.replace(/\+/g,' ').replace(/%24/g, '$');
   dataArray = unplussed.split("&");
   for (var i = 0; i < dataArray.length; i++) {
     dataArray[i] = dataArray[i].slice(dataArray[i].indexOf("=") + 1);
@@ -313,6 +313,7 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
     //that.renderValues();
     $("#content").html("");
     $("#navigation").show();
+    $("#caption").hide();
     $("#user-ident").html("Welcome back, " + that.currentUser.userIdent + "!");
     that.setLentLedgerTable();
     that.setBorrowedLedgerTable();
@@ -956,6 +957,7 @@ window.onload = function () {
     $("#content").html("");
     delete localStorage["lenderUserIdent"];
     $("#navigation").hide();
+    $("#caption").show();
     polonius.setUserDropdown();
     polonius.setNewUserForm();
   });
@@ -964,6 +966,7 @@ window.onload = function () {
     polonius.setUserFromFirebase(localStorage["lenderUserIdent"]);
   } else {
     $("#navigation").hide();
+    $("#caption").show();
     polonius.setUserDropdown();
     polonius.setNewUserForm();
   };
