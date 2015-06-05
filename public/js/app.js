@@ -391,7 +391,7 @@ Polonius.prototype.renderTable =function(storedArrays) {
     console.log(itemReturnedToLender[b]);
     console.log(borrowConfirmedFromBorrower[b]);
     //makes table if item has been recieved and item has not been returned
-    if (itemReceivedFromFriend[b] && ((itemReturnedToLender[b] == false) || borrowConfirmedFromBorrower[b] == false)) {
+    if (borrowConfirmedFromBorrower[b] && ((itemReturnedToLender[b] == false) || itemReceivedFromFriend[b] == false)) {
       if (itemReturnedToLender[b]) {
         //replaces returned button with checkmark
         $bRow = $('<tr>').append('<td>&#x2713</td><td>' + itemNamesBorrowed[b] + '</td><td>' + owner[b] +'</td></tr>');
