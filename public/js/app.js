@@ -325,7 +325,7 @@ Polonius.prototype.setUserDropdown = function() {
 
   var that = this;
 
-  $("#content").append($("<div class='col-xs-5' id='loginArea'></div>"));
+  $("#content").append($("<div class='col-xs-7' id='loginArea'></div>"));
 
   $.get('login.html', function(data) {
 
@@ -378,7 +378,7 @@ Polonius.prototype.setManagePage = function() {
 //Sets the new_user.html form in the correct place, and gives it the necessary function.
 Polonius.prototype.setNewUserForm = function() {
   var that = this;
-  $("#content").append("<div class='col-xs-1'></div><div class='col-xs-5' id='signUpArea'><p>Sign Up</p></div>")
+  $("#content").append("<div class='col-xs-1'></div><div class='col-xs-7' id='signUpArea'><p>Sign Up</p></div>")
   this.loadForm("new_user", this.createNewUser, "#signUpArea", function() {
     that.setUserFromFirebase(localStorage["lenderUserIdent"]);
   });
