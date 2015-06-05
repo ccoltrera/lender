@@ -48,6 +48,8 @@ body{
 	margin-left: auto;
 	margin: 10px;
 	overflow: auto;
+	display: inline-block;
+
 }
 .title { /*avoids h2 borders*/
   background-color: none;
@@ -183,4 +185,8 @@ select {
 }
 .pleaseCenter {
 /*login page centered boxes*/
+}
+
+#navigation ul {
+	padding: 0;
 }
