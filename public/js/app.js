@@ -472,16 +472,20 @@ function Tracker(upc, borrower) {
 
 Polonius.prototype.setUserDropdown = function() {
 
-  $('#loginArea').load('login.html') //loads
+  $('#loginArea').load('login.html')
+
+  //Pulls users information from Firebase
   usersRef.on('value', function(usersSnapshot) {
     var startDDPopulate = document.getElementById('selectLoginID');
     var user;
-    //Pulling names from Firebase
+
+    //Use snapshot of Users and turns into an array of strings.
     var usersFromFirebase = usersSnapshot.val();
     var namesForDropdown = Object.keys(usersFromFirebase);
 
+    // Use names in Firebase and create option tags to store them
     var options = namesForDropdown;
-    var opt = 'Find your name';
+    var opt = 'Your name: ';
     var el = document.createElement('option');
     el.textContent = opt;
     el.value = opt;
@@ -495,6 +499,7 @@ Polonius.prototype.setUserDropdown = function() {
       startDDPopulate.appendChild(el);
     }
 
+    //Click event that registers user selected and loads ledger html
     $('#loginButton').on("click", function(event) {
       selectedUserStr = document.getElementById('selectLoginID').value;
       polonius.setUserFromFirebase(selectedUserStr);
