@@ -218,8 +218,10 @@ Polonius.prototype.loadForm = function(formName, functionToCall, locationID, nex
     $("#" + formName + "_form").on("submit", function(event) {
       event.preventDefault();
       var parsedData = parseForm($(this).serialize());
-      functionToCall(thisPolonius, parsedData[0], parsedData[1], parsedData[2]);
-      nextStep();
+      if (parsedData.length > 0) {
+        functionToCall(thisPolonius, parsedData[0], parsedData[1], parsedData[2]);
+        nextStep();
+      }
     });
 
     if (formName == "init_lend") {
@@ -339,7 +341,7 @@ Polonius.prototype.setUserDropdown = function() {
         var namesForDropdown = Object.keys(usersFromFirebase);
 
         var options = namesForDropdown;
-        var opt = 'Find your name';
+        var opt = 'Username';
         var el = document.createElement('option');
         el.textContent = opt;
         el.value = opt;
@@ -962,13 +964,13 @@ window.onload = function () {
     polonius.setLentLedgerTable();
     polonius.setBorrowedLedgerTable();
 
-  })
+  });
 
   $("#manage").on("click", function(event) {
 
     polonius.setManagePage();
 
-  })
+  });
 
   $("#logout").on("click", function(event) {
 
@@ -978,7 +980,7 @@ window.onload = function () {
     polonius.setUserDropdown();
     polonius.setNewUserForm();
 
-  })
+  });
 
 
   if (localStorage["lenderUserIdent"]) {
