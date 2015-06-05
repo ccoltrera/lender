@@ -29,6 +29,7 @@ body{
 	color: #1D2326;
 	text-align: center;
 	font-family: 'Raleway', sans-serif;
+	vertical-align: middle;
 	}
 
 .col-xs-1, .col-xs-2 {
@@ -63,6 +64,7 @@ body{
 	box-shadow: 0 0 5px 1px #7D2A35;
 	width: 95%;
 }
+
 #caption { /*styles the caption on the home page*/
 	font-family: 'Raleway', sans-serif;
 	font-size: 18px;
@@ -102,9 +104,9 @@ footer {
 	overflow: auto;
 	border: 2px solid #7D2A35;
 	font-size: 46px;
+	margin: 10px;
 	margin-right: auto;
 	margin-left: auto;
-	margin: 10px;
 }
 input[type="text"] {
   display: block;
@@ -168,4 +170,17 @@ th {
 select {
 	background-color: #A69276;
 	font-size: 18px;
+}
+#user-ident {
+	background-color: #eeeeee;
+	margin: 10px;
+	border: 2px solid #eeeeee;
+	border-radius: 15px;
+	font-size: 14px;
+	padding: 5px 14px;
+	text-align: center;
+	box-shadow: 0 0 5px 1px #7D2A35;
+}
+.pleaseCenter {
+/*login page centered boxes*/
 }
