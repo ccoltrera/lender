@@ -305,13 +305,11 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
       if (userSnapshot.val()['ledger']['lent']) {
         user.ledger.lent = userSnapshot.val()['ledger']['lent'];
       }
-
     }
 
     user.userRef = usersRef.child(userIdent);
 
     that.currentUser = user;
-
     //that.renderValues();
     $("#content").html("");
     $("#navigation").show();
@@ -361,15 +359,10 @@ Polonius.prototype.setUserDropdown = function() {
           var selectedUserStr = document.getElementById('selectLoginID').value;
           that.setUserFromFirebase(selectedUserStr);
           localStorage.lenderUserIdent = selectedUserStr;
-
         });
-
       }
-
     });
-
   })
-
 };
 
 Polonius.prototype.setManagePage = function() {
@@ -412,7 +405,6 @@ Polonius.prototype.setInitLendForm = function() {
   this.loadForm("init_lend", this.initializeNewLend, "#init-lend-space", function(){
     that.setManagePage();
   });
-
 }
 
 Polonius.prototype.setConfirmBorrowsForm = function() {
@@ -486,7 +478,6 @@ Polonius.prototype.setConfirmBorrowsForm = function() {
             if (borrowedItemsLength === 0) {
               $confirmBorrowsTable.append("<tr><td>No waiting borrows.</td></tr>");
             }
-
           }
         });
       }
@@ -553,7 +544,6 @@ Polonius.prototype.setPendingLendsTable = function() {
                     .append("<tr id='upc" + lentItems[item]["upc"] + "'><td>" + lentItems[item]["itemDetails"] + "</td><td>" + lentItems[item]["borrower"] + "</td>/tr>")
 
                   $("#upc" + lentItems[item]["upc"]).append($cancelLendButton);
-
                 }
               }
             });
@@ -571,19 +561,16 @@ Polonius.prototype.setPendingLendsTable = function() {
             if (lentItemsLength === 0) {
               $pendingLendsTable.append("<tr><td>No pending lends.</td></tr>");
             }
-
           }
         });
       }
     }
-
     //If the user doesn't have any lent items.
     else {
       $pendingLendsTable.append("<tr><td>No pending lends.</td></tr>");
     }
   });
 }
-
 
 Polonius.prototype.initializeNewLend = function(thisPolonius, upc, borrower) {
   thisPolonius.currentUser.initializeLend(upc, borrower);
@@ -677,7 +664,6 @@ Polonius.prototype.setLentLedgerTable = function() {
         });
       }
     }
-
     //If the user doesn't have any lent items.
     else {
       $lentTable.append("<tr><td class='no-items'>No items lent.</td></tr>");
@@ -769,12 +755,10 @@ Polonius.prototype.setBorrowedLedgerTable = function() {
             if (borrowedItemsLength === 0) {
               $borrowedTable.append("<tr><td>No items borrowed.</td></tr>");
             }
-
           }
         });
       }
     }
-
     //If the user doesn't have any borrowed items.
     else {
       $borrowedTable.append("<tr><td>No items borrowed.</td></tr>");
@@ -954,48 +938,38 @@ Polonius.prototype.renderTable =function(storedArrays) {
   };
 };
 
-
 var polonius = new Polonius();
 
 //Loads html table before js is called
 window.onload = function () {
 
   $("#ledger").on("click", function(event) {
-
     $("#content").html("");
     polonius.setLentLedgerTable();
     polonius.setBorrowedLedgerTable();
-
   });
 
   $("#manage").on("click", function(event) {
-
     polonius.setManagePage();
-
   });
 
   $("#logout").on("click", function(event) {
-
     $("#content").html("");
     delete localStorage["lenderUserIdent"];
     $("#navigation").hide();
     $("#caption").show();
     polonius.setUserDropdown();
     polonius.setNewUserForm();
-
   });
-
 
   if (localStorage["lenderUserIdent"]) {
     polonius.setUserFromFirebase(localStorage["lenderUserIdent"]);
-  }
-  else
-  {
+  } else {
     $("#navigation").hide();
     $("#caption").show();
     polonius.setUserDropdown();
     polonius.setNewUserForm();
-  }
+  };
 
 };
 
