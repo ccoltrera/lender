@@ -136,4 +136,16 @@ a {
 	  box-shadow: 0 0 5px 1px #7D2A35;
 }
 
+table {
 
+  margin-bottom: 10px;
+}
+
+tr, td {
+  border: solid 1px #707070;
+}
+
+th {
+  text-align: left;
+  padding: 0 10px 0 10px;
+}
