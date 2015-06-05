@@ -315,6 +315,7 @@ Polonius.prototype.setUserFromFirebase = function(userIdent) {
     //that.renderValues();
     $("#content").html("");
     $("#navigation").show();
+    $("#caption").hide();
     $("#user-ident").html("Welcome back, " + that.currentUser.userIdent + "!");
     that.setLentLedgerTable();
     that.setBorrowedLedgerTable();
@@ -978,6 +979,7 @@ window.onload = function () {
     $("#content").html("");
     delete localStorage["lenderUserIdent"];
     $("#navigation").hide();
+    $("#caption").show();
     polonius.setUserDropdown();
     polonius.setNewUserForm();
 
@@ -990,6 +992,7 @@ window.onload = function () {
   else
   {
     $("#navigation").hide();
+    $("#caption").show();
     polonius.setUserDropdown();
     polonius.setNewUserForm();
   }
