@@ -60,7 +60,7 @@ body{
 	font-size: 15vw;
 	overflow: auto;
 	text-shadow: 4px 4px 4px rgba(0, 0, 0, .5);
-	border-radius: 47%;
+	box-shadow: 0 0 5px 1px #7D2A35;
 	width: 95%;
 }
 #caption { /*styles the caption on the home page*/
@@ -130,7 +130,23 @@ input[type="text"]:focus {
   box-shadow: 0 0 5px 1px #7D2A35;
 }
 button {
-	margin: 7px;
+	display: inline-block;
+	margin: 10px;
+	border: 2px solid #7D2A35;
+	border-radius: 15px;
+	font-size: 14px;
+	padding: 5px 14px;
+	text-align: center;
+	background-color: #A69276;
+	box-shadow: 0 0 5px 1px #7D2A35;
+}
+button:hover {
+	background-color: #eeeeee;
+	color: #1D2326;
+}
+button:active {
+	background-color: #7D2A35;
+	color: #eeeeee;
 }
 a {
 	  box-shadow: 0 0 5px 1px #7D2A35;
@@ -148,4 +164,8 @@ tr, td {
 th {
   text-align: left;
   padding: 0 10px 0 10px;
+}
+select {
+	background-color: #A69276;
+	font-size: 18px;
 }
