@@ -266,7 +266,7 @@ Polonius.prototype.loadForm = function(formName, functionToCall, locationID, nex
 
 //Parses the serialized data from a form, returns array of form values without their associated names.
 Polonius.prototype.parseForm = function(serializedData) {
-  var unplussed = serializedData.replace(/\+/g,' ');
+  var unplussed = serializedData.replace(/\+/g,' ').replace(/%24/g, '$');
   dataArray = unplussed.split("&");
   for (var i = 0; i < dataArray.length; i++) {
     dataArray[i] = dataArray[i].slice(dataArray[i].indexOf("=") + 1);
