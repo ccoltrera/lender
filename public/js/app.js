@@ -258,7 +258,7 @@ x.setUserDropdown();
 //obtains values for making ledger page tables
 Polonius.prototype.renderValues =function() {
   //to change based on Polonius user
-  var userIdent = 'Mike';
+  var userIdent = this.currentUser.userIdent;
 
   var users, trackers, item, itemSpecific, transactionID;
   var upcLentOut = []; //holds upc codes for items lent out
@@ -270,9 +270,10 @@ Polonius.prototype.renderValues =function() {
   var itemNamesLent = []; //stores the itemDetails of items Lent out
   var transIds = [];//stores all the transaction IDs
   var borrowConfirmedFromOwner = [];/*stores boolean values for when users
-                                      confirm itemshave been borrowed */
-  var borrowConfirmedFromBorrower = [];
-  var myItemReceived = [];
+                                      items have been borrowed */
+  var borrowConfirmedFromBorrower = [];/*stores boolean values for when user's
+                                        borrowed item has been confirmed*/
+  var myItemReceived = [];// stores boolean values for when user's receive items back
   var itemReceivedFromFriend = [];//stores boolean values for when users receive items
   var itemReturnedFromBorrower = [];//stores boolean values for when users confirm returns
   var itemReturnedToLender = []; //stores boolean values for when returned button is pressed to
@@ -280,11 +281,9 @@ Polonius.prototype.renderValues =function() {
   var transIdBorrowed = [];
   var storedArrays = [];//stores the arrays needed to make table and input work
 
-
   //Obtains for trackers objects in firebase
   trackersRef.once('value', function(trackersSnapshot) {
     trackers = trackersSnapshot.val(); //converts snapshot to workable objects
-
     //gets values within objects
     for (var transactionID in trackers) {
       if (userIdent == trackers[transactionID].owner) {
@@ -305,32 +304,29 @@ Polonius.prototype.renderValues =function() {
       }
     };
   });
-
   //for scope issues
   var that = this;
-
   //for items objects in firebase
   itemsRef.once('value', function(itemsSnapshot) {
     items = itemsSnapshot.val();
-
     //Object.keys will give the key values which = upc for all items
     var allItems = Object.keys(items);
     for (var k = 0; k < allItems.length; k++){
       for(var a = 0; a < upcBorrowed.length; a++){
-
-        //Finds the values needed only from the upc codes that match
+        //Finds the borrowed item name values needed only from the upc codes that match
         if (allItems[k] == upcBorrowed[a]) {
           owner.push(items[upcBorrowed[a]].owner);
           itemNamesBorrowed.push(items[upcBorrowed[a]].itemDetails)
         }
       }
-
+      //Finds user's item names that have been lent out
       for(var l = 0; l < upcLentOut.length; l++){
         if (allItems[k] == upcLentOut[l]) {
           itemNamesLent.push(items[upcLentOut[l]].itemDetails)
         };
       };
     };
+    //stores needed values to array for table making and inputing
     storedArrays.push(owner);
     storedArrays.push(itemNamesLent);
     storedArrays.push(itemNamesBorrowed);
@@ -353,6 +349,7 @@ Polonius.prototype.renderValues =function() {
 //makes tables for ledger page
 Polonius.prototype.renderTable =function(storedArrays) {
   var lentTable, lRow, bRow;
+  //recalls array
   var owner = storedArrays[0];
   var itemNamesLent = storedArrays[1];
   var itemNamesBorrowed = storedArrays[2];
@@ -367,7 +364,6 @@ Polonius.prototype.renderTable =function(storedArrays) {
   var transIdBorrowed = storedArrays[11];
   var upcLentOut = storedArrays[12];
   var upcBorrowed = storedArrays[13];
-
   //Creates Rows for Lent Table
   $lentTable = $('#lent-table');
   for (var t = 0; t < borrower.length; t++) {
@@ -383,13 +379,9 @@ Polonius.prototype.renderTable =function(storedArrays) {
       $lentTable.append($lRow);
     }
   }
-
   //Creates Rows for Borrowed table
   $borrowedTable = $('#borrowed-table');
   for (var b = 0; b < owner.length; b++) {
-    console.log(itemReceivedFromFriend[b]);
-    console.log(itemReturnedToLender[b]);
-    console.log(borrowConfirmedFromBorrower[b]);
     //makes table if item has been recieved and item has not been returned
     if (borrowConfirmedFromBorrower[b] && ((itemReturnedToLender[b] == false) || itemReceivedFromFriend[b] == false)) {
       if (itemReturnedToLender[b]) {
@@ -401,49 +393,33 @@ Polonius.prototype.renderTable =function(storedArrays) {
       $borrowedTable.append($bRow);
     };
   };
-
-  var that = this;
-
   //changes received button to true
   $('.receivedCheckbox').on("click", function(e) {
     for (var z = 0; z < myItemReceived.length; z++) {
       trackersRef.child(transIdLentOut[z] + "/itemReceived/").set(true);
-
-    }
-    // window.onload = function () {
-    //   var x = new Polonius();
-    //   table.renderValues();
-    // }
+    };
   });
-
   //changes returned button to true
   $('.returnedCheckbox').on('click', function(e) {
     for (var y = 0; y < itemReturnedToLender.length; y++) {
       trackersRef.child(transIdBorrowed[y] + "/itemReturned/").set(true);
-
-    }
+    };
   });
-
   //makes lent half "lentOut" values = false
   for (var v = 0; v < myItemReceived.length; v++) {
-    console.log(upcBorrowed[v]);
     if (myItemReceived[v] && itemReturnedFromBorrower[v]) {
       itemsRef.child(upcLentOut[v] + '/lentOut/').set(false);
-    }
+    };
   };
-
   //makes borrowed half "lentOut" values = false
   for (var w = 0; w < itemReceivedFromFriend.length; w++) {
-    console.log(upcBorrowed[w]);
     if (itemReceivedFromFriend[w] && itemReturnedToLender[w]) {
       itemsRef.child(upcBorrowed[w] + '/lentOut/').set(false);
     };
   };
-}
-
-
+};
+//Loads html table before js is called
 window.onload = function () {
-  //to load html table before js is called
   var table = new Polonius();
   table.renderValues();
 };
